@@ -1,6 +1,6 @@
 from manim import *
 spin_color=BLUE
-
+hamiltonian_color=ORANGE
 
 class Ising(Scene):
     def construct(self):
@@ -42,9 +42,9 @@ class Ising(Scene):
 
 
         line=Line(start=circle_1.get_edge_center(RIGHT), end=circle_2.get_edge_center(LEFT),color=ORANGE)
-        h= MathTex("H",color=ORANGE)
-        rest=MathTex("=-Js_1s_2").next_to(h,RIGHT)
-        hamiltonian=VGroup(h,rest).next_to(line,UP*10)
+        hamiltonian=MathTex('H','=J','s_1s_2').next_to(line,UP*10)
+        hamiltonian[0].set_color(hamiltonian_color)
+        hamiltonian[2].set_color(spin_color)
         self.play(Create(line), Write(hamiltonian))
 
         

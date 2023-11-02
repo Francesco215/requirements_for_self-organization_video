@@ -1,13 +1,11 @@
-import numpy as np
-
-from manim import VMobject
+from manim import *
 
 """
     Take this code as a rough blueprint, I have written it whithout using classes, but if you prefer to do it in a object oriented way feel free to do so
 """
 
 
-def MakeGrid(starting_state:np.array) -> VMobject:
+def make_grid(starting_state: np.array) -> VGroup:
     """This function creates the VMobject representing the grid
     
     It draws the grid of circles with the specified starting configuration.
@@ -19,8 +17,44 @@ def MakeGrid(starting_state:np.array) -> VMobject:
         starting_state (np.array): the starting configuration of the grid. dtype=bool 
 
     Returns:
-        VMobject: the VM object representing the grid
+        VGroup: the VM object representing the grid
     """
+
+    rows, columns = starting_state.shape
+    screen_width = config["frame_width"]
+    screen_height = config["frame_height"]
+
+    if columns > rows:
+        bigger_dimension = columns
+        screen_size = screen_width
+    else:
+        bigger_dimension = rows
+        screen_size = screen_height
+
+    radius = 1
+    between_space = 0.2
+    while bigger_dimension * (radius * 2) > (screen_size - (bigger_dimension * between_space)):
+        radius -= 0.05
+
+    circles = [Circle(color=BLUE, radius=radius) for _ in range(columns * rows)]
+    circles_group = VGroup(*circles)
+    circles_group.arrange_in_grid(rows, columns, buff=between_space)
+    for arrow_direction, circle in zip(starting_state.flatten(), circles):
+        arrow = Arrow(start=ORIGIN, end=UP if arrow_direction else DOWN, buff=radius)
+        arrow.shift(circle.get_center() - arrow.get_center())
+        circles_group.add(arrow)
+    return circles_group
+
+
+class Test(Scene):
+    def construct(self):
+        # plane = NumberPlane()
+        # self.add(plane)
+
+        starting_state = np.random.choice([True, False], size=(5, 10))
+        print(starting_state)
+        self.add(make_grid(starting_state))
+
 
 
 def UpdateCircleGrid(grid:VMobject, new_state:np.array) -> VMobject:

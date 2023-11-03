@@ -1,4 +1,5 @@
-from typing import Dict, List
+import random
+from typing import Dict
 
 from manim import *
 
@@ -12,8 +13,15 @@ Grid = Dict[str, VGroup]
 def bool2direction(bool):
     return UP if bool else DOWN
 
+def bool2color(bool):
+    return WHITE if bool else BLACK
 
-def make_grid(starting_state: np.array) -> Grid:
+
+def eq_position(src, dst):
+    src.shift(dst.get_center() - src.get_center())
+
+
+def make_grid(starting_state: np.array, scene: Scene) -> Grid:
     """This function creates the VMobject representing the grid
 
     It draws the grid of circles with the specified starting configuration.
@@ -50,15 +58,19 @@ def make_grid(starting_state: np.array) -> Grid:
     arrows_group = VGroup()
     for arrow_direction, circle in zip(starting_state.flatten(), circles):
         arrow = Arrow(start=ORIGIN, end=bool2direction(arrow_direction), buff=radius)
-        arrow.shift(circle.get_center() - arrow.get_center())
+        eq_position(arrow, circle)
         arrows_group.add(arrow)
+
+    scene.add(circles_group)
+    scene.add(arrows_group)
     return {
         'circles': circles_group,
-        'arrows': arrows_group
+        'arrows': arrows_group,
+        'between_space': between_space
     }
 
 
-def update_circle_grid(grid: Grid, new_state: np.array) -> List[Animation]:
+def update_circle_grid(grid: Grid, new_state: np.array, scene: Scene):
     """It updates the grid made of circles and animates fluidly the transition of the arrows flipping over
 
     Args:
@@ -73,28 +85,14 @@ def update_circle_grid(grid: Grid, new_state: np.array) -> List[Animation]:
         expected_direction = bool2direction(arrow_direction)
         actual_direction = arrow.get_unit_vector()
         if (expected_direction != actual_direction).any():
+            clockwise_or_not = 1 if random.choice([True, False]) else -1
             animations.append(
-                Rotate(arrow, angle=PI, run_time=2, rate_func=smooth)
+                Rotate(arrow, angle=PI * clockwise_or_not, run_time=2, rate_func=smooth)
             )
-    return animations
+    scene.play(*animations)
 
 
-class Test(Scene):
-    def construct(self):
-        # plane = NumberPlane()
-        # self.add(plane)
-
-        starting_state = np.random.choice([True, False], size=(5, 10))
-        grid = make_grid(starting_state)
-        for group in grid.values():
-            self.add(group)
-        new_state = np.random.choice([True, False], size=(5, 10))
-        animations = update_circle_grid(grid, new_state)
-        self.play(*animations)
-        self.wait(1)
-
-
-def CirclesToSquares(grid:VMobject) -> VMobject:
+def circles_to_squares(grid: Grid, scene: Scene):
     """It turns the grid made of circles and arrows in to a square grid similar to the one in the website
     It animates fluidly the transition.
 
@@ -110,9 +108,32 @@ def CirclesToSquares(grid:VMobject) -> VMobject:
 
     Returns:
         VMobject: the updated grid
-    """    
+    """
+    animations = []
+    squares = []
+    for circle, arrow in zip(grid['circles'], grid['arrows']):
+        if (arrow.get_unit_vector() == UP).all():
+            color = WHITE
+        else:
+            color = BLACK
+        square = Square(
+            color=color,
+            side_length=circle.radius * 2 + grid['between_space'],
+            fill_color=color,
+            fill_opacity=1
+        )
+        squares.append(square)
+        eq_position(square, circle)
+        animations.append(Transform(circle, square, rate_func=smooth, run_time=3))
+    grid['squares'] = squares
+    scene.play(*animations)
+    arrows_fade_out = []
+    for arrow in grid['arrows']:
+        arrows_fade_out.append(FadeOut(arrow, run_time=1))
+    scene.play(*arrows_fade_out)
 
-def UpdateSquareGrid(grid:VMobject, new_state:np.array) -> VMobject:
+
+def update_square_grid(grid: Grid, new_state: np.array, scene: Scene):
     """It updates the grid made of squares and animates the transition of the squares changing color
 
     Args:
@@ -122,6 +143,27 @@ def UpdateSquareGrid(grid:VMobject, new_state:np.array) -> VMobject:
     Returns:
         VMobject: the updated grid
     """
-    
+    animations = []
+    for square, state in zip(grid['squares'], new_state.flatten()):
+        color = bool2color(state)
+        if square.color != color:
+            animations.append(ApplyMethod(square.set_color, color, rate_func=smooth, run_time=3))
+    scene.play(*animations)
 
 
+class Test(Scene):
+    def construct(self):
+        # plane = NumberPlane()
+        # self.add(plane)
+
+        starting_state = np.random.choice([True, False], size=(5, 10))
+        grid = make_grid(starting_state, self)
+        self.wait(1)
+        new_state = np.random.choice([True, False], size=(5, 10))
+        update_circle_grid(grid, new_state, self)
+        self.wait(1)
+        circles_to_squares(grid, self)
+        self.wait(1)
+        new_state2 = np.random.choice([True, False], size=(5, 10))
+        update_square_grid(grid, new_state2, self)
+        self.wait(1)

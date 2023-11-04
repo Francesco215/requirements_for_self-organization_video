@@ -7,7 +7,7 @@ from manim import *
     Take this code as a rough blueprint, I have written it whithout using classes, but if you prefer to do it in a object oriented way feel free to do so
 """
 
-Grid = Dict[str, VGroup]
+Grid = dict[str, VGroup]
 
 
 def bool2direction(bool):
@@ -33,7 +33,8 @@ def make_grid(starting_state: np.array, scene: Scene) -> Grid:
         starting_state (np.array): the starting configuration of the grid. dtype=bool
 
     Returns:
-        VGroup: the VM object representing the grid
+        dict[VMobject]: A dictionary containing the grid, arrows and labels 
+
     """
 
     rows, columns = starting_state.shape

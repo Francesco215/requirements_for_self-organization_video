@@ -1,7 +1,7 @@
 from manim import *
 
-spin_color=BLUE
-hamiltonian_color=ORANGE
+from GLOBAL_VALUES import spin_color, hamiltonian_color
+
 
 def rotate_spin(self, text, arrow, angle, index):
     if angle==PI:

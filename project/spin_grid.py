@@ -3,6 +3,8 @@ from typing import Dict
 
 from manim import *
 
+from GLOBAL_VALUES import spin_color, hamiltonian_color, circle_fill_color, circle_fill_opacity
+
 """
     Take this code as a rough blueprint, I have written it whithout using classes, but if you prefer to do it in a object oriented way feel free to do so
 """
@@ -53,12 +55,12 @@ def make_grid(starting_state: np.array, scene: Scene) -> Grid:
     while bigger_dimension * (radius * 2) > (screen_size - (bigger_dimension * between_space)):
         radius -= 0.05
 
-    circles = [Circle(color=BLUE, radius=radius) for _ in range(columns * rows)]
+    circles = [Circle(color=BLUE, radius=radius, fill_color=circle_fill_color, fill_opacity=circle_fill_opacity) for _ in range(columns * rows)]
     circles_group = VGroup(*circles)
     circles_group.arrange_in_grid(rows, columns, buff=between_space)
     arrows_group = VGroup()
     for arrow_direction, circle in zip(starting_state.flatten(), circles):
-        arrow = Arrow(start=ORIGIN, end=bool2direction(arrow_direction), buff=radius)
+        arrow = Arrow(start=ORIGIN, end=bool2direction(arrow_direction)*radius, buff=radius, color=spin_color)
         eq_position(arrow, circle)
         arrows_group.add(arrow)
 

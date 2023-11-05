@@ -64,8 +64,6 @@ def make_grid(starting_state: np.array, scene: Scene) -> Grid:
         eq_position(arrow, circle)
         arrows_group.add(arrow)
 
-    scene.add(circles_group)
-    scene.add(arrows_group)
     return {
         'circles': circles_group,
         'arrows': arrows_group,
@@ -73,7 +71,7 @@ def make_grid(starting_state: np.array, scene: Scene) -> Grid:
     }
 
 
-def update_circle_grid(grid: Grid, new_state: np.array, scene: Scene):
+def update_circle_grid(grid: Grid, new_state: np.array, scene: Scene, random_rotation=True):
     """It updates the grid made of circles and animates fluidly the transition of the arrows flipping over
 
     Args:
@@ -88,11 +86,11 @@ def update_circle_grid(grid: Grid, new_state: np.array, scene: Scene):
         expected_direction = bool2direction(arrow_direction)
         actual_direction = arrow.get_unit_vector()
         if (expected_direction != actual_direction).any():
-            clockwise_or_not = 1 if random.choice([True, False]) else -1
+            clockwise_or_not = 1 if random.choice([True, False]) and random_rotation else -1
             animations.append(
                 Rotate(arrow, angle=PI * clockwise_or_not, run_time=2, rate_func=smooth)
             )
-    scene.play(*animations)
+    return animations
 
 
 def circles_to_squares(grid: Grid, scene: Scene):
@@ -136,7 +134,7 @@ def circles_to_squares(grid: Grid, scene: Scene):
     scene.play(*arrows_fade_out)
 
 
-def update_square_grid(grid: Grid, new_state: np.array, scene: Scene):
+def update_square_grid(grid: Grid, new_state: np.array, scene: Scene)->list[Animation]:
     """It updates the grid made of squares and animates the transition of the squares changing color
 
     Args:
@@ -144,14 +142,14 @@ def update_square_grid(grid: Grid, new_state: np.array, scene: Scene):
         new_state (np.array): the new configuration of the grid
 
     Returns:
-        VMobject: the updated grid
+        list[Animation]: the list of animations
     """
     animations = []
     for square, state in zip(grid['squares'], new_state.flatten()):
         color = bool2color(state)
         if square.color != color:
             animations.append(ApplyMethod(square.set_color, color, rate_func=smooth, run_time=3))
-    scene.play(*animations)
+    return animations
 
 
 class Test(Scene):
@@ -168,5 +166,5 @@ class Test(Scene):
         circles_to_squares(grid, self)
         self.wait(1)
         new_state2 = np.random.choice([True, False], size=(5, 10))
-        update_square_grid(grid, new_state2, self)
+        self.animate(*update_square_grid(grid, new_state2, self))
         self.wait(1)

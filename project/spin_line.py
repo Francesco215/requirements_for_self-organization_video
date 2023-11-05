@@ -4,6 +4,7 @@ import numpy as np
 
 from GLOBAL_VALUES import spin_color, hamiltonian_color, temperature_color, entropy_color
 from spin_grid import make_grid, update_circle_grid
+from simulations.fully_connected import make_random_chain
 
 def make_domain_barrier(len:int,barrier:int)->np.array:
     assert 0<=barrier<=len, "Barrier must be between 0 and len, got barrier={}".format(barrier)
@@ -16,9 +17,6 @@ def first_nonzero(bool_array:np.array)->int:
 
     return len(bool_array)
 
-
-def make_random_chain(len:int)->np.array:
-    return np.random.randint(low=0,high=2,size=[1,len])==0
 
 
 chain_lenght=9

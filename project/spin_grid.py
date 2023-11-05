@@ -71,21 +71,21 @@ def make_grid(starting_state: np.array, scene: Scene) -> Grid:
     }
 
 
-def update_circle_grid(grid: Grid, new_state: np.array, scene: Scene, random_rotation=True):
+def update_circle_grid(grid: Grid, new_state: np.array, scene: Scene, random_rotation=True)->list[Animation]:
     """It updates the grid made of circles and animates fluidly the transition of the arrows flipping over
 
     Args:
         grid (VGroup): the grid originally created with the MakeGrid function
-        new_state (np.array): the new configuration of the grid
+        new_state (np.array): the new configuration of the grid. dtype=bool
 
     Returns:
-        VGroup: the updated grid
+        list[Animation]: a list of animations to be played in the scene
     """
     animations = []
     for arrow_direction, arrow in zip(new_state.flatten(), grid['arrows']):
         expected_direction = bool2direction(arrow_direction)
         actual_direction = arrow.get_unit_vector()
-        if (expected_direction != actual_direction).any():
+        if np.dot(expected_direction, actual_direction)<0:
             clockwise_or_not = 1 if random.choice([True, False]) and random_rotation else -1
             animations.append(
                 Rotate(arrow, angle=PI * clockwise_or_not, run_time=2, rate_func=smooth)

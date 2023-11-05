@@ -2,7 +2,7 @@ from manim import *
 
 import numpy as np
 
-from GLOBAL_VALUES import spin_color, hamiltonian_color
+from GLOBAL_VALUES import spin_color, hamiltonian_color, temperature_color, entropy_color
 from spin_grid import make_grid, update_circle_grid
 
 def make_domain_barrier(len:int,barrier:int)->np.array:
@@ -70,4 +70,55 @@ class SpinLine(Scene):
         self.play(Create(domain_barrier),Transform(energy,target_energy),*update_circle_grid(grid, state, self, random_rotation=False))
         self.wait(1)
 
-        
+        # you would think the system would tend in the state where all the spins are aligned,
+        # however when you introduce some noise that can be parametrized by the temperature
+        # what is actually minimized is the Free energy
+
+        free_energy=MathTex('F','=','E','-','T','S').next_to(energy,0)
+        free_energy[0].set_color(hamiltonian_color)
+        free_energy[2].set_color(hamiltonian_color)
+        free_energy[4].set_color(temperature_color)
+        free_energy[5].set_color(entropy_color)
+
+        self.play(Transform(energy,free_energy))
+        self.wait(1)
+
+        # in the free energy there is this new term that has to be taken in account
+        self.play(Wiggle(energy[4]),Wiggle(energy[5]))
+        self.wait(1)
+
+        text=None
+        for b in range(chain_lenght-1):
+            midpoint=(circles[b].get_center() + circles[b+1].get_center())/2 
+            state=make_domain_barrier(chain_lenght,b+1) 
+            self.play(domain_barrier.animate.set_x(midpoint[0]),*update_circle_grid(grid,state,self,random_rotation=False))
+
+            if b==3:
+                text=MathTex('S','=\log(N-1)').next_to(circles,DOWN*3)
+                text[0].set_color(entropy_color)
+                self.play(Write(text))
+
+
+        free_energy=MathTex('F','=','J','-','T','\log(N-1)').next_to(energy,0)
+        free_energy[0].set_color(hamiltonian_color)
+        free_energy[2].set_color(hamiltonian_color)
+        free_energy[4].set_color(temperature_color)
+        free_energy[5].set_color(entropy_color)
+
+        self.play(Transform(energy,free_energy))
+        self.wait(1)
+
+        self.play(FadeOut(text))
+
+        text=MathTex('\Delta','F','<0').next_to(text,0)
+        text[1].set_color(hamiltonian_color)
+        self.play(Write(text))
+        self.wait(1)
+
+
+        free_energy=MathTex('J','<','T','\log(N-1)').next_to(energy,0)
+        free_energy[0].set_color(hamiltonian_color)
+        free_energy[2].set_color(temperature_color)
+        free_energy[3].set_color(entropy_color)
+        self.play(Transform(energy,free_energy))
+        self.wait(1)

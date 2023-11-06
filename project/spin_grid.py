@@ -1,22 +1,15 @@
 import random
-from typing import Dict
 
 from manim import *
 
 from GLOBAL_VALUES import spin_color, hamiltonian_color, circle_fill_color, circle_fill_opacity
+from utils import bool2direction, update_colors
 
 """
     Take this code as a rough blueprint, I have written it whithout using classes, but if you prefer to do it in a object oriented way feel free to do so
 """
 
 Grid = dict[str, VGroup]
-
-
-def bool2direction(bool):
-    return UP if bool else DOWN
-
-def bool2color(bool):
-    return WHITE if bool else BLACK
 
 
 def eq_position(src, dst):
@@ -134,24 +127,6 @@ def circles_to_squares(grid: Grid, scene: Scene):
     scene.play(*arrows_fade_out)
 
 
-def update_square_grid(grid: Grid, new_state: np.array, scene: Scene)->list[Animation]:
-    """It updates the grid made of squares and animates the transition of the squares changing color
-
-    Args:
-        grid (VMobject): the grid originally created with the MakeGrid function
-        new_state (np.array): the new configuration of the grid
-
-    Returns:
-        list[Animation]: the list of animations
-    """
-    animations = []
-    for square, state in zip(grid['squares'], new_state.flatten()):
-        color = bool2color(state)
-        if square.color != color:
-            animations.append(ApplyMethod(square.set_color, color, rate_func=smooth, run_time=3))
-    return animations
-
-
 class Test(Scene):
     def construct(self):
         # plane = NumberPlane()
@@ -166,5 +141,5 @@ class Test(Scene):
         circles_to_squares(grid, self)
         self.wait(1)
         new_state2 = np.random.choice([True, False], size=(5, 10))
-        self.animate(*update_square_grid(grid, new_state2, self))
+        self.play(*update_colors(grid['squares'], new_state2))
         self.wait(1)

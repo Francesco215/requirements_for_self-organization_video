@@ -1,9 +1,13 @@
 import math
 
+from manim import *
+
 from utils import *
+from GLOBAL_VALUES import hamiltonian_color, spin_color
 
 
-def get_distance_between_centers(circles: VGroup, angles: np.array) -> float:
+
+def get_distance_between_centers(circles: VGroup|list, angles: np.array) -> float:
     assert len(circles) >= 2
 
     x1, y1, _ = circles[0].get_center()
@@ -27,7 +31,7 @@ def draw_circles(state: np.array) -> VGroup:
         circles.add(Circle(
             radius=radius,
             stroke_width=1,
-            stroke_color=BLACK,
+            stroke_color=WHITE,
             fill_color=bool2color(color),
             fill_opacity=1,
         ))
@@ -46,22 +50,37 @@ def lines2circle(circles: VGroup, target_idx: int) -> VGroup:
         if i == target_idx:
             continue
         dst = circle.get_center()
-        lines.add(Line(target_center, dst, color=BLACK, stroke_width=1))
+        lines.add(Line(target_center, dst, color=hamiltonian_color, stroke_width=1))
     return lines
 
+def LaserBullets(circles: VGroup, target_idx:int) -> Animation:
+    lines=lines2circle(circles,target_idx)
+    return [Create(line) for line in lines], [Uncreate(line, reverse=False) for line in lines] #the reverse arguements seems to do nothing
 
-class Test(Scene):
+
+
+
+class FullyConnected(Scene):
     def construct(self):
         # plane = NumberPlane()
         # self.add(plane)
         colors = np.random.choice([True, False], size=(100, 1))
-        white_background = Rectangle(width=self.camera.frame_width, height=self.camera.frame_height, fill_color=WHITE, fill_opacity=1)
+        # white_background = Rectangle(width=self.camera.frame_width, height=self.camera.frame_height, fill_color=WHITE, fill_opacity=1)
         circles = draw_circles(colors)
-        lines = lines2circle(circles, 3)
-        self.add(white_background, lines, circles)  # line should be before circles (to avoid crossing circle border)
+        self.play(Create(circles))  # line should be before circles (to avoid crossing circle border)
+        for _ in range(5):
+            idx=np.random.randint(0,len(circles))
+            make_bullets,disappear_bullets=LaserBullets(circles,idx)
+            self.play(*make_bullets)  # line should be before circles (to avoid crossing circle border)
+            self.play(*disappear_bullets, run_time=0.5)  # line should be before circles (to avoid crossing circle border)
+
+        hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j')
+        hamiltonian[0].set_color(hamiltonian_color)
+        hamiltonian[2].set_color(spin_color)
+
+        self.play(Write(hamiltonian))
+
         for _ in range(5):
             colors = np.random.choice([True, False], size=(100, 1))
-            self.play(*update_colors(circles, colors))
-            self.wait(1)
-
-
+            self.play(*update_colors(circles, colors),run_time=0.1)
+            self.wait(0.3)

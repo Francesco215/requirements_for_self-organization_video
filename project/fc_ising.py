@@ -3,8 +3,10 @@ import math
 from manim import *
 
 from utils import *
-from GLOBAL_VALUES import hamiltonian_color, spin_color
+from GLOBAL_VALUES import * 
 
+def logistic(x, start_value, end_value, transition_speed = 1):
+    return start_value + (end_value - start_value) / (1 + np.exp(-transition_speed * x )) 
 
 
 def get_distance_between_centers(circles: VGroup|list, angles: np.array) -> float:
@@ -58,15 +60,17 @@ def LaserBullets(circles: VGroup, target_idx:int) -> Animation:
     return [Create(line) for line in lines], [Uncreate(line, reverse=False) for line in lines] #the reverse arguements seems to do nothing
 
 
+from simulations.fully_connected import FC_Ising
 
+ising=FC_Ising(100)
 
 class FullyConnected(Scene):
     def construct(self):
         # plane = NumberPlane()
         # self.add(plane)
-        colors = np.random.choice([True, False], size=(100, 1))
+        colors = ising.state==1
         # white_background = Rectangle(width=self.camera.frame_width, height=self.camera.frame_height, fill_color=WHITE, fill_opacity=1)
-        circles = draw_circles(colors)
+        circles = draw_circles(colors).shift(2*LEFT)
         self.play(Create(circles))  # line should be before circles (to avoid crossing circle border)
         for _ in range(5):
             idx=np.random.randint(0,len(circles))
@@ -74,13 +78,33 @@ class FullyConnected(Scene):
             self.play(*make_bullets)  # line should be before circles (to avoid crossing circle border)
             self.play(*disappear_bullets, run_time=0.5)  # line should be before circles (to avoid crossing circle border)
 
-        hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j')
+        hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j').shift(4*RIGHT,2*UP)
         hamiltonian[0].set_color(hamiltonian_color)
         hamiltonian[2].set_color(spin_color)
 
         self.play(Write(hamiltonian))
+        self.play(Wiggle(hamiltonian[2]))
 
-        for _ in range(5):
-            colors = np.random.choice([True, False], size=(100, 1))
-            self.play(*update_colors(circles, colors),run_time=0.1)
-            self.wait(0.3)
+        slider=Line(start=5*RIGHT+2.6*DOWN,end=5*RIGHT+0.4*UP)
+
+        pointer=Triangle().scale(0.2).set_stroke(width=0.2).rotate(-90*DEGREES).set_fill(color=temperature_color,opacity=1)
+        temp_tex=MathTex('T').next_to(pointer,LEFT).set_color(temperature_color)
+
+        pointer_position=4.5*RIGHT+0.2*UP
+        t_pointer=VGroup(pointer,temp_tex).move_to(pointer_position)
+
+        self.play(Create(slider))
+        self.play(Create(pointer),Write(temp_tex))
+
+        for t in np.linspace(-10, 10, 100):
+            temperature = logistic(t, start_value=2., end_value=.9, transition_speed=1)
+            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+2.6*DOWN, start_value=pointer_position, transition_speed=1))
+            colors = ising.simulation_steps(temperature, 5)
+            
+            # Use there rate_func to control the animation substeps
+            self.play(pointer_movement, *update_colors(circles, colors), run_time=0.1, rate_func=linear)
+
+
+
+
+

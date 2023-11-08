@@ -48,7 +48,7 @@ class SpinLine(Scene):
         self.wait(1)
 
         state=make_domain_barrier(chain_lenght,chain_lenght)
-        self.play(*update_circle_grid(grid, state, self, random_rotation=False))
+        self.play(*update_circle_grid(grid, state, random_rotation=False))
         self.wait(1)
 
         self.play(FadeOut(hamiltonian))
@@ -65,7 +65,7 @@ class SpinLine(Scene):
 
         midpoint=(circles[b-1].get_center() + circles[b].get_center())/2        
         domain_barrier=Line(midpoint+UP,midpoint+DOWN)
-        self.play(Create(domain_barrier),Transform(energy,target_energy),*update_circle_grid(grid, state, self, random_rotation=False))
+        self.play(Create(domain_barrier),Transform(energy,target_energy),*update_circle_grid(grid, state, random_rotation=False))
         self.wait(1)
 
         # you would think the system would tend in the state where all the spins are aligned,
@@ -89,7 +89,7 @@ class SpinLine(Scene):
         for b in range(chain_lenght-1):
             midpoint=(circles[b].get_center() + circles[b+1].get_center())/2 
             state=make_domain_barrier(chain_lenght,b+1) 
-            self.play(domain_barrier.animate.set_x(midpoint[0]),*update_circle_grid(grid,state,self,random_rotation=False))
+            self.play(domain_barrier.animate.set_x(midpoint[0]),*update_circle_grid(grid,state,random_rotation=False))
 
             if b==3:
                 text=MathTex('S','=\log(N-1)').next_to(circles,DOWN*3)

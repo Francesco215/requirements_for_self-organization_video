@@ -60,11 +60,12 @@ def make_grid(starting_state: np.array, scene: Scene) -> Grid:
     return {
         'circles': circles_group,
         'arrows': arrows_group,
-        'between_space': between_space
+        'between_space': between_space,
+        'shape': starting_state.shape
     }
 
 
-def update_circle_grid(grid: Grid, new_state: np.array, scene: Scene, random_rotation=True)->list[Animation]:
+def update_circle_grid(grid: Grid, new_state: np.array, random_rotation=True)->list[Animation]:
     """It updates the grid made of circles and animates fluidly the transition of the arrows flipping over
 
     Args:
@@ -112,7 +113,8 @@ def circles_to_squares(grid: Grid, scene: Scene):
             color = BLACK
         square = Square(
             color=color,
-            side_length=circle.radius * 2 + grid['between_space'],
+            side_length=circle.radius * 2 + grid['between_space'] + 0.01,
+            stroke_width=0,
             fill_color=color,
             fill_opacity=1
         )
@@ -127,6 +129,67 @@ def circles_to_squares(grid: Grid, scene: Scene):
     scene.play(*arrows_fade_out)
 
 
+def get_neighbours(objects: list[Mobject], shape):
+    rows, columns = shape
+    idx = 0
+    table = []
+    for _ in range(rows):
+        row = []
+        for _ in range(columns):
+            row.append(objects[idx])
+            idx += 1
+        table.append(row)
+
+    result = []
+    for row_idx, row in enumerate(table):
+        for col_idx, val in enumerate(row):
+            if col_idx == 0:
+                left = None
+            else:
+                left = table[row_idx][col_idx - 1]
+            if col_idx == (columns - 1):
+                right = None
+            else:
+                right = table[row_idx][col_idx + 1]
+            if row_idx == 0:
+                top = None
+            else:
+                top = table[row_idx - 1][col_idx]
+            if row_idx == (rows - 1):
+                down = None
+            else:
+                down = table[row_idx + 1][col_idx]
+            result.append((left, right, top, down))
+    return result
+
+
+def add_boundaries(grid: Grid) -> list[Animation]:
+    animations = []
+    grid['boundaries'] = []
+    def add(start, end):
+        line = Line(
+            start=square.get_corner(start),
+            end=square.get_corner(end),
+            color=hamiltonian_color,
+            stroke_width=2
+        )
+        grid['boundaries'].append(line)
+        animations.append(Create(line))
+
+    for square, neighbours in zip(grid['squares'], get_neighbours(grid['squares'], grid['shape'])):
+        left, right, top, down = neighbours
+        if left is None or left.color != square.color:
+            add(UP + LEFT, DOWN + LEFT)
+        if right is None or right.color != square.color:
+            add(UP + RIGHT, DOWN + RIGHT)
+        if top is None or top.color != square.color:
+            add(UP + LEFT, UP + RIGHT)
+        if down is None or down.color != square.color:
+            add(DOWN + LEFT, DOWN + RIGHT)
+
+    return animations
+
+
 class Test(Scene):
     def construct(self):
         # plane = NumberPlane()
@@ -136,10 +199,11 @@ class Test(Scene):
         grid = make_grid(starting_state, self)
         self.wait(1)
         new_state = np.random.choice([True, False], size=(5, 10))
-        update_circle_grid(grid, new_state, self)
+        update_circle_grid(grid, new_state)
         self.wait(1)
         circles_to_squares(grid, self)
         self.wait(1)
         new_state2 = np.random.choice([True, False], size=(5, 10))
         self.play(*update_colors(grid['squares'], new_state2))
+        self.play(*add_boundaries(grid))
         self.wait(1)

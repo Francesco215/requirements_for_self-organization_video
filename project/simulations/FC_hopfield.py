@@ -16,7 +16,7 @@ class FC_Hopfield:
         if starting_state is not None:
             assert patterns.shape == starting_state.shape
         else:
-            starting_state = np.random.choice([-1, 1], size=shape)
+            starting_state = np.random.choice([-1, 1], size=self.shape)
 
         self.state = squeeze(starting_state)
         self.patterns=squeeze(patterns)

@@ -57,7 +57,7 @@ def lines2circle(circles: VGroup, target_idx: int) -> VGroup:
 
 def LaserBullets(circles: VGroup, target_idx:int) -> Animation:
     lines=lines2circle(circles,target_idx)
-    return [Create(line) for line in lines], [Uncreate(line, reverse=False) for line in lines] #the reverse arguements seems to do nothing
+    return lines, [Create(line) for line in lines], [Uncreate(line) for line in lines]
 
 
 from simulations.fully_connected import FC_Ising
@@ -66,17 +66,18 @@ ising=FC_Ising(100)
 
 class FullyConnected(Scene):
     def construct(self):
-        # plane = NumberPlane()
-        # self.add(plane)
         colors = ising.state==1
-        # white_background = Rectangle(width=self.camera.frame_width, height=self.camera.frame_height, fill_color=WHITE, fill_opacity=1)
         circles = draw_circles(colors).shift(2*LEFT)
-        self.play(Create(circles))  # line should be before circles (to avoid crossing circle border)
+        self.play(Create(circles))
         for _ in range(5):
             idx=np.random.randint(0,len(circles))
-            make_bullets,disappear_bullets=LaserBullets(circles,idx)
-            self.play(*make_bullets)  # line should be before circles (to avoid crossing circle border)
-            self.play(*disappear_bullets, run_time=0.5)  # line should be before circles (to avoid crossing circle border)
+            lines, make_bullets,disappear_bullets=LaserBullets(circles,idx)
+            self.play(*make_bullets)
+            for line in lines:
+                start_point = line.get_start()
+                end_point = line.get_end()
+                line.put_start_and_end_on(end_point, start_point)
+            self.play(*disappear_bullets)
 
         hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j').shift(4*RIGHT,2*UP)
         hamiltonian[0].set_color(hamiltonian_color)
@@ -100,7 +101,7 @@ class FullyConnected(Scene):
             temperature = logistic(t, start_value=2., end_value=.9, transition_speed=1)
             pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+2.6*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)
-            
+
             # Use there rate_func to control the animation substeps
             self.play(pointer_movement, *update_colors(circles, colors), run_time=0.1, rate_func=linear)
 

@@ -12,7 +12,7 @@ def energy_2D_ising(state: np.array, J: float) -> float:
     return -J * np.sum(state * neighbors_sum)
 
 class Ising2D:
-    def __init__(self, shape, starting_state=None, J=-np.log(1 + np.sqrt(2)) / 2):
+    def __init__(self, shape, starting_state=None):
         self.shape = shape
         if starting_state is not None:
             assert shape == starting_state.shape
@@ -20,8 +20,8 @@ class Ising2D:
             starting_state = np.random.choice([-1, 1], size=shape)
 
         self.state = starting_state
-        self.J = J
-        self.energy = energy_2D_ising(starting_state, J)
+        self.J = -np.log(1 + np.sqrt(2)) / 2
+        self.energy = energy_2D_ising(starting_state, self.J)
 
     def simulation_steps(self, temperature: float, n_steps: int) -> np.array:
         for _ in range(n_steps):

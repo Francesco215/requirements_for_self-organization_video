@@ -3,7 +3,7 @@ import random
 from manim import *
 
 from GLOBAL_VALUES import spin_color, hamiltonian_color, circle_fill_color, circle_fill_opacity
-from utils import bool2direction, update_colors
+from utils import bool2direction, update_colors2
 
 """
     Take this code as a rough blueprint, I have written it whithout using classes, but if you prefer to do it in a object oriented way feel free to do so
@@ -165,7 +165,7 @@ def get_neighbours(objects: list[Mobject], shape):
 
 def add_boundaries(grid: Grid) -> list[Animation]:
     animations = []
-    grid['boundaries'] = []
+    grid['boundaries'] = VGroup()
     def add(start, end):
         line = Line(
             start=square.get_corner(start),
@@ -173,7 +173,7 @@ def add_boundaries(grid: Grid) -> list[Animation]:
             color=hamiltonian_color,
             stroke_width=2
         )
-        grid['boundaries'].append(line)
+        grid['boundaries'].add(line)
         animations.append(Create(line))
 
     for square, neighbours in zip(grid['squares'], get_neighbours(grid['squares'], grid['shape'])):
@@ -190,6 +190,14 @@ def add_boundaries(grid: Grid) -> list[Animation]:
     return animations
 
 
+def zoom_out(grid) -> list[Animation]:
+    zoom_out = []
+    for obj in grid.values():
+        if isinstance(obj, VGroup):
+            zoom_out.append(obj.animate.scale(0.2))
+    return zoom_out
+
+
 class Test(Scene):
     def construct(self):
         # plane = NumberPlane()
@@ -204,6 +212,8 @@ class Test(Scene):
         circles_to_squares(grid, self)
         self.wait(1)
         new_state2 = np.random.choice([True, False], size=(5, 10))
-        self.play(*update_colors(grid['squares'], new_state2))
+        anims = update_colors2(grid, 'squares', new_state2)
+        self.play(*anims)
         self.play(*add_boundaries(grid))
+        self.play(*zoom_out(grid), run_time=5)
         self.wait(1)

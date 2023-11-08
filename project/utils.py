@@ -16,3 +16,11 @@ def update_colors(group: VGroup, new_state: np.array) -> list[Animation]:
         if obj.color != color:
             animations.append(ApplyMethod(obj.set_fill, color, rate_func=smooth, run_time=1))
     return animations
+
+
+def update_colors2(grid, key, new_state: np.array) -> list[Animation]:
+    anims = update_colors(grid[key], new_state)
+    grid[key] = VGroup()
+    for anim in anims:
+        grid[key].add(anim.mobject)
+    return anims

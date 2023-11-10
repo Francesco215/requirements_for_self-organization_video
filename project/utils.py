@@ -14,7 +14,9 @@ def update_colors(group: VGroup, new_state: np.array) -> list[Animation]:
     for obj, state in zip(group, new_state.flatten()):
         color = bool2color(state)
         if obj.color != color:
-            animations.append(ApplyMethod(obj.set_fill, color, rate_func=smooth, run_time=1))
+            animations += [ApplyMethod(obj.set_color, color, rate_func=smooth, run_time=1),
+                           ]
+
     return animations
 
 

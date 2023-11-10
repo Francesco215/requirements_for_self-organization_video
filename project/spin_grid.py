@@ -16,7 +16,7 @@ def eq_position(src, dst):
     src.shift(dst.get_center() - src.get_center())
 
 
-def make_grid(starting_state: np.array, scene: Scene) -> Grid:
+def make_grid(starting_state: np.array, scene: Scene, radius=None) -> Grid:
     """This function creates the VMobject representing the grid
 
     It draws the grid of circles with the specified starting configuration.
@@ -33,20 +33,21 @@ def make_grid(starting_state: np.array, scene: Scene) -> Grid:
     """
 
     rows, columns = starting_state.shape
-    screen_width = config["frame_width"]
-    screen_height = config["frame_height"]
-
-    if columns > rows:
-        bigger_dimension = columns
-        screen_size = screen_width
-    else:
-        bigger_dimension = rows
-        screen_size = screen_height
-
-    radius = 1
     between_space = 0.2
-    while bigger_dimension * (radius * 2) > (screen_size - (bigger_dimension * between_space)):
-        radius -= 0.05
+
+    if radius is None:
+        screen_width = config["frame_width"]
+        screen_height = config["frame_height"]
+
+        if columns > rows:
+            bigger_dimension = columns
+            screen_size = screen_width
+        else:
+            bigger_dimension = rows
+            screen_size = screen_height
+        radius = 1
+        while bigger_dimension * (radius * 2) > (screen_size - (bigger_dimension * between_space)):
+            radius -= 0.05
 
     circles = [Circle(color=BLUE, radius=radius, fill_color=circle_fill_color, fill_opacity=circle_fill_opacity) for _ in range(columns * rows)]
     circles_group = VGroup(*circles)
@@ -113,8 +114,9 @@ def circles_to_squares(grid: Grid, scene: Scene):
             color = BLACK
         square = Square(
             color=color,
-            side_length=circle.radius * 2 + grid['between_space'] + 0.01,
-            stroke_width=0,
+            side_length=circle.radius * 2 + grid['between_space'],
+            stroke_width=2,
+            stroke_color=color,
             fill_color=color,
             fill_opacity=1
         )
@@ -203,15 +205,16 @@ class Test(Scene):
         # plane = NumberPlane()
         # self.add(plane)
 
-        starting_state = np.random.choice([True, False], size=(5, 10))
-        grid = make_grid(starting_state, self)
+        size = (40, 80)
+        starting_state = np.random.choice([True, False], size=size)
+        grid = make_grid(starting_state, self, radius=0.5)
         self.wait(1)
-        new_state = np.random.choice([True, False], size=(5, 10))
+        new_state = np.random.choice([True, False], size=size)
         update_circle_grid(grid, new_state)
         self.wait(1)
         circles_to_squares(grid, self)
         self.wait(1)
-        new_state2 = np.random.choice([True, False], size=(5, 10))
+        new_state2 = np.random.choice([True, False], size=size)
         anims = update_colors2(grid, 'squares', new_state2)
         self.play(*anims)
         self.play(*add_boundaries(grid))

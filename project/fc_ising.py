@@ -44,20 +44,35 @@ def draw_circles(state: np.array) -> VGroup:
     return circles
 
 
+def pick_alpha(target_center, dst, distance):
+    direction_vector = dst - target_center
+    normalized_direction = direction_vector / np.linalg.norm(direction_vector)
+    end = target_center + normalized_direction * distance
+    alpha = np.linalg.norm(end - target_center) / np.linalg.norm(direction_vector)
+    return alpha
+
+
 def lines2circle(circles: VGroup, target_idx: int) -> VGroup:
     target = circles[target_idx]
     target_center = target.get_center()
     lines = VGroup()
+    destinations = []
+    create = []
+    uncreate = []
+    travel_distance = []
     for i, circle in enumerate(circles):
         if i == target_idx:
             continue
         dst = circle.get_center()
-        lines.add(Line(target_center, dst, color=hamiltonian_color, stroke_width=1))
-    return lines
+        destinations.append(dst)
+        end = interpolate(target_center, dst, pick_alpha(target_center, dst, 0.5))
+        line = Line(target_center, end, color=hamiltonian_color, stroke_width=1)
+        travel_distance.append(np.linalg.norm(target_center - dst) - 2 * line.get_length())
+        lines.add(line)
+        create.append(Create(line))
+        uncreate.append(Uncreate(line))
 
-def LaserBullets(circles: VGroup, target_idx:int) -> Animation:
-    lines=lines2circle(circles,target_idx)
-    return lines, [Create(line) for line in lines], [Uncreate(line) for line in lines]
+    return lines, destinations, create, uncreate
 
 
 from simulations.fully_connected import FC_Ising
@@ -71,14 +86,20 @@ class FullyConnected(Scene):
         self.play(Create(circles))
         for _ in range(5):
             idx=np.random.randint(0,len(circles))
-            lines, make_bullets,disappear_bullets=LaserBullets(circles,idx)
-            self.play(*make_bullets)
+            lines, destinations, create, uncreate = lines2circle(circles, idx)
+            # maby pick other run_time to make animation smoother
+            self.play(*create, run_time=0.5, rate_func=linear)
+            flying = []
+            for line, dst in zip(lines, destinations):
+                flying.append(line.animate.shift(dst - line.get_end()))
+            self.play(*flying, run_time=3, rate_func=linear)
+
             for line in lines:
                 start_point = line.get_start()
                 end_point = line.get_end()
                 line.put_start_and_end_on(end_point, start_point)
-            self.play(*disappear_bullets)
 
+            self.play(*uncreate, run_time=0.5, rate_func=linear)
         hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j').shift(4*RIGHT,2*UP)
         hamiltonian[0].set_color(hamiltonian_color)
         hamiltonian[2].set_color(spin_color)

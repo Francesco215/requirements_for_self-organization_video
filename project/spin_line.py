@@ -2,8 +2,8 @@ from manim import *
 
 import numpy as np
 
-from GLOBAL_VALUES import spin_color, hamiltonian_color, temperature_color, entropy_color
-from spin_grid import make_grid, update_circle_grid
+from utils.GLOBAL_VALUES import spin_color, hamiltonian_color, temperature_color, entropy_color
+from utils.grid import make_grid, update_circle_grid
 from simulations.fully_connected import make_random_chain
 
 def make_domain_barrier(len:int,barrier:int)->np.array:

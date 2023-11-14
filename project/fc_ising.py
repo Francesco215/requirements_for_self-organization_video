@@ -2,8 +2,9 @@ import math
 
 from manim import *
 
-from utils import *
-from GLOBAL_VALUES import * 
+from utils.GLOBAL_VALUES import * 
+from utils.utils import *
+
 
 def logistic(x, start_value, end_value, transition_speed = 1):
     return start_value + (end_value - start_value) / (1 + np.exp(-transition_speed * x )) 

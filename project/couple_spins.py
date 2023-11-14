@@ -1,6 +1,6 @@
 from manim import *
 
-from GLOBAL_VALUES import spin_color, hamiltonian_color
+from utils.GLOBAL_VALUES import spin_color, hamiltonian_color
 
 
 def rotate_spin(self, text, arrow, angle, index):

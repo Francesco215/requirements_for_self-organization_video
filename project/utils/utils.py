@@ -10,12 +10,11 @@ def bool2color(bool):
 
 
 def update_colors(group: VGroup, new_state: np.array) -> list[Animation]:
-    animations = []
+    animations=[]
     for obj, state in zip(group, new_state.flatten()):
         color = bool2color(state)
         if obj.color != color:
-            animations += [ApplyMethod(obj.set_color, color, rate_func=smooth, run_time=1),
-                           ]
+            animations.append(obj.animate.set_color(color))
 
     return animations
 

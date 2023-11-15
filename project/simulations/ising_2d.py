@@ -58,7 +58,7 @@ class Ising2D:
         """
         for _ in range(n_steps):
             i, j = np.random.randint(self.shape)
-            delta_energy = 2 * self.J * self.state[i, j] * (
+            delta_energy = -2 * self.J * self.state[i, j] * (
                     self.state[(i + 1) % self.shape[0], j] + self.state[(i - 1) % self.shape[0], j] + \
                     self.state[i, (j + 1) % self.shape[1]] + self.state[i, (j - 1) % self.shape[1]])
             if delta_energy < 0 or np.random.rand() < np.exp(-delta_energy / temperature):

@@ -185,10 +185,11 @@ def add_boundaries(grid: Grid) -> list[Animation]:
     return animations
 
 
-def zoom_out(grid) -> list[Animation]:
+def zoom_out(grid, scale) -> list[Animation]:
     zoom_out = []
     for obj in grid.values():
         if isinstance(obj, VGroup):
-            zoom_out.append(obj.animate.scale(0.2))
+            zoom_out.append(obj.animate.scale(scale))
+            
     return zoom_out
 

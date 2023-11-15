@@ -99,7 +99,7 @@ def circles_to_squares(grid: Grid, scene: Scene):
         VMobject: the updated grid
     """
     animations = []
-    squares = []
+    squares = VGroup()
     for circle, arrow in zip(grid['circles'], grid['arrows']):
         if (arrow.get_unit_vector() == UP).all():
             color = WHITE
@@ -113,7 +113,7 @@ def circles_to_squares(grid: Grid, scene: Scene):
             fill_color=color,
             fill_opacity=1
         )
-        squares.append(square)
+        squares.add(square)
         eq_position(square, circle)
         animations.append(Transform(circle, square, rate_func=smooth, run_time=3))
     grid['squares'] = squares
@@ -187,9 +187,13 @@ def add_boundaries(grid: Grid) -> list[Animation]:
 
 def zoom_out(grid, scale) -> list[Animation]:
     zoom_out = []
-    for obj in grid.values():
-        if isinstance(obj, VGroup):
-            zoom_out.append(obj.animate.scale(scale))
-            
+    for k in grid.keys():
+        group = grid[k]
+        if not isinstance(group, VGroup):
+            continue
+
+        anim = group.animate.scale(scale)
+        zoom_out.append(anim)
+        grid[k] = anim.mobject
     return zoom_out
 

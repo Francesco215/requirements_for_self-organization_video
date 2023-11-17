@@ -1,3 +1,5 @@
+from functools import partial
+
 from manim import *
 
 
@@ -25,3 +27,5 @@ def update_colors2(grid, key, new_state: np.array) -> list[Animation]:
     for anim in anims:
         grid[key].add(anim.mobject)
     return anims
+
+

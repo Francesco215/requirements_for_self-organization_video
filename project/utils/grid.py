@@ -382,8 +382,7 @@ def tracking_boundaries(grid, scene):
 
         line1 = path[0]
         line2 = path[1]
-        if as_key(line1.get_start()) != as_key(line2.get_start()) and as_key(line1.get_start()) != as_key(
-                line2.get_end()):
+        if as_key(line1.get_start()) != as_key(line2.get_start()) and as_key(line1.get_start()) != as_key(line2.get_end()):
             init_position = line1.get_start()
         else:
             init_position = line1.get_end()

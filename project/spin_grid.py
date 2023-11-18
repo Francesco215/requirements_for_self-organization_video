@@ -1,5 +1,7 @@
 from manim import *
 
+import pickle
+
 from utils.utils import bool2color, update_colors2
 from utils.grid import Grid, make_grid, update_circle_grid, circles_to_squares, add_boundaries, zoom_out, tracking_boundaries
 """
@@ -54,6 +56,14 @@ class TrackingBoundaries(Scene):
         ising = Ising2D(shape)
 
         grid = make_grid(ising.state == 1, self, radius=0.2)
+        # with open('/home/nikos/aaa.pickle', 'wb') as f:
+        #    pickle.dump(grid, f)
+
+        # with open('/home/nikos/aaa.pickle', 'rb') as f:
+        #    grid = pickle.load(f)
+
         circles_to_squares(grid, self)
+        # grid2 = NumberPlane()
+        # self.add(grid2)
         tracking_boundaries(grid, self)
         self.wait(2)

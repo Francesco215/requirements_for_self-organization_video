@@ -278,30 +278,44 @@ def as_key(start_or_end):
     return tuple(r)
 
 
-def create_paths(island_lines):
+def create_paths(island_lines, idx, scene, debug):
     paths = []
     k = list(island_lines.keys())[0]
-    line = island_lines[k][0]
+    square_id, line = island_lines[k][0]
     path = [line]
-    remove_line(line, island_lines)
+    head = as_key(line.get_start())
+    remove_line((square_id, line), island_lines)
     while True:
-        start = as_key(line.get_start())
-        end = as_key(line.get_end())
-        if start in island_lines:
-            line = island_lines[start][0]
-            remove_line(line, island_lines)
+        if head in island_lines:
+            current_square_line = None
+            for square_id2, line in island_lines[head]:
+                if square_id2 == square_id:
+                    current_square_line = line
+                    break
+
+            if current_square_line:
+                line = current_square_line
+            else:
+                square_id, line = island_lines[head][0]
+
+            remove_line((square_id, line), island_lines)
+            if debug:
+                number = Tex(str(idx), color=RED).scale(0.5)
+                eq_position(number, line)
+                scene.add(number)
+                idx += 1
             path.append(line)
-        elif end in island_lines:
-            line = island_lines[end][0]
-            remove_line(line, island_lines)
-            path.append(line)
+            if head == as_key(line.get_start()):
+                head = as_key(line.get_end())
+            else:
+                head = as_key(line.get_start())
         elif not island_lines:
             paths.append(path)
             break
         else:
             # holes
             paths.append(path)
-            paths += create_paths(island_lines)
+            paths += create_paths(island_lines, idx, scene, debug)
             break
     return paths
 
@@ -337,7 +351,8 @@ def tracking_boundaries(grid, scene):
     islands, as_ones_and_zeros = find_islands(grid)
 
     how_many = None
-    if how_many is not None:
+    debug = False
+    if debug:
         as_ones_and_zeros2 = []
         for row in as_ones_and_zeros:
             tmp = []
@@ -356,18 +371,20 @@ def tracking_boundaries(grid, scene):
     islands_grouped_by_lines = []
     for island in islands:
         lines = {}
+        square_id = 0
         for square in island:
             borders = square2borders.get(square)
             if borders is None:
                 continue
             for line in borders:
-                lines.setdefault(as_key(line.get_start()), []).append(line)
-                lines.setdefault(as_key(line.get_end()), []).append(line)
+                lines.setdefault(as_key(line.get_start()), []).append((square_id, line))
+                lines.setdefault(as_key(line.get_end()), []).append((square_id, line))
+            square_id += 1
         islands_grouped_by_lines.append(lines)
 
     paths = []
     for island_lines in islands_grouped_by_lines:
-        paths += create_paths(island_lines)
+        paths += create_paths(island_lines, 1, scene, debug)
 
     idx2dot = {}
     steps = {}
@@ -375,7 +392,7 @@ def tracking_boundaries(grid, scene):
         path2 = VMobject(color=hamiltonian_color)
         dot = Dot(color=hamiltonian_color)
 
-        if how_many is not None:
+        if debug:
             for l in path:
                 l.color = GREEN
                 scene.add(l)

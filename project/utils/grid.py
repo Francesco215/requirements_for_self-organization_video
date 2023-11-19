@@ -166,7 +166,7 @@ def get_neighbours(objects: list[Mobject], shape):
     return result
 
 
-def add_boundaries(grid: Grid) -> list[Animation]:
+def add_boundaries(grid: Grid, stroke_width=2) -> list[Animation]:
     animations = []
     grid['boundaries'] = VGroup()
     def add(start, end):
@@ -174,7 +174,9 @@ def add_boundaries(grid: Grid) -> list[Animation]:
         end2 = square.get_corner(end)
         line = Line(
             start=start2,
-            end=end2
+            end=end2,
+            color=hamiltonian_color,
+            stroke_width=stroke_width
         )
         grid['boundaries'].add(line)
         animations.append(Create(line))

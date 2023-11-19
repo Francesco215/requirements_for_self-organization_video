@@ -65,25 +65,27 @@ class CoupleSpins(Scene):
 
 
         line=Line(start=circle_1.get_edge_center(RIGHT), end=circle_2.get_edge_center(LEFT),color=ORANGE)
-        hamiltonian=MathTex('H','=-J','s_1','\cdot','s_2').next_to(line,UP*10)
+        hamiltonian=MathTex('H','=','-J','s_1','\cdot','s_2').next_to(line,UP*10)
         hamiltonian[0].set_color(hamiltonian_color)
-        hamiltonian[2].set_color(spin_color)
+        hamiltonian[-3].set_color(spin_color)
         hamiltonian[-1].set_color(spin_color)
         self.play(Create(line), Write(hamiltonian))
-
-
         self.wait(1)
 
+        self.play(Wiggle(hamiltonian[2]))
+        self.wait()
 
-        energy=MathTex('=+J').next_to(hamiltonian,RIGHT)
+        self.play(Wiggle(hamiltonian[-3]),Wiggle(hamiltonian[-1]))
+
+
+        energy=MathTex('=-J').next_to(hamiltonian,RIGHT)
         H=VGroup(hamiltonian,energy)
-        self.play(Write(energy),*rotate_spin(self, text_1, arrow_1, PI, 1))    
-        self.play(H.animate.shift(LEFT/2))
 
+        self.play(Write(energy))
+        self.play(H.animate.shift(LEFT/2))
         self.wait(1)
 
-        target_energy=MathTex('=-J').next_to(energy,0)
-
+        target_energy=MathTex('=+J').next_to(energy,0)
         self.play(Transform(energy,target_energy),*rotate_spin(self, text_1, arrow_1, PI, 1))
         self.wait(1)
 
@@ -101,3 +103,8 @@ class CoupleSpins(Scene):
         high_to_low_arrow=Arrow(higher_energy_level.get_edge_center(DOWN)+ LEFT/2,lower_energy_level.get_edge_center(UP)+ LEFT/2, stroke_width=8)
         low_to_high_arrow=Arrow(lower_energy_level.get_edge_center(DOWN)+ RIGHT/2,higher_energy_level.get_edge_center(UP)+ RIGHT/2, stroke_width=3)
         self.play(Create(high_to_low_arrow), Create(low_to_high_arrow))
+
+        target_energy=MathTex('=-J').next_to(energy,0)
+        self.play(Transform(energy,target_energy),*rotate_spin(self, text_1, arrow_1, PI, 1))
+        self.play(Wiggle(lower_energy_level,scale_value=1.2))
+        self.wait(1) 

@@ -60,7 +60,7 @@ class SpinLine(Scene):
 
         b=4
         state=make_domain_barrier(chain_lenght,b)
-        target_energy=MathTex('E','=J').next_to(energy,0)
+        target_energy=MathTex('E','=2J').next_to(energy,0)
         target_energy[0].set_color(hamiltonian_color)
 
         midpoint=(circles[b-1].get_center() + circles[b].get_center())/2        
@@ -72,32 +72,35 @@ class SpinLine(Scene):
         # however when you introduce some noise that can be parametrized by the temperature
         # what is actually minimized is the Free energy
 
-        free_energy=MathTex('F','=','E','-','T','S').next_to(energy,0)
-        free_energy[0].set_color(hamiltonian_color)
-        free_energy[2].set_color(hamiltonian_color)
-        free_energy[4].set_color(temperature_color)
-        free_energy[5].set_color(entropy_color)
+        free_energy=MathTex('\Delta','F','=','\Delta','E','-','T','\Delta','S').next_to(energy,0)
+        free_energy[1].set_color(hamiltonian_color)
+        free_energy[4].set_color(hamiltonian_color)
+        free_energy[6].set_color(temperature_color)
+        free_energy[8].set_color(entropy_color)
 
         self.play(Transform(energy,free_energy))
         self.wait(1)
 
+        self.play(Wiggle(energy[3]),Wiggle(energy[4]))
+        self.wait(1)
         # in the free energy there is this new term that has to be taken in account
-        self.play(Wiggle(energy[4]),Wiggle(energy[5]))
+        self.play(Wiggle(energy[-1]),Wiggle(energy[-2]), Wiggle(energy[-3]))
         self.wait(1)
 
         text=None
         for b in range(chain_lenght-1):
             midpoint=(circles[b].get_center() + circles[b+1].get_center())/2 
             state=make_domain_barrier(chain_lenght,b+1) 
-            self.play(domain_barrier.animate.set_x(midpoint[0]),*update_circle_grid(grid,state,random_rotation=False))
+            animations=[domain_barrier.animate.set_x(midpoint[0]),*update_circle_grid(grid,state,random_rotation=False)]
 
             if b==3:
                 text=MathTex('S','=\log(N-1)').next_to(circles,DOWN*3)
                 text[0].set_color(entropy_color)
-                self.play(Write(text))
+                animations.append(Write(text))
 
+            self.play(*animations)
 
-        free_energy=MathTex('F','=','J','-','T','\log(N-1)').next_to(energy,0)
+        free_energy=MathTex('F','=2','J','-','T','\log(N-1)').next_to(energy,0)
         free_energy[0].set_color(hamiltonian_color)
         free_energy[2].set_color(hamiltonian_color)
         free_energy[4].set_color(temperature_color)
@@ -114,7 +117,7 @@ class SpinLine(Scene):
         self.wait(1)
 
 
-        free_energy=MathTex('J','<','T','\log(N-1)').next_to(energy,0)
+        free_energy=MathTex('J','<\\frac 12','T','\log(N-1)').next_to(energy,0)
         free_energy[0].set_color(hamiltonian_color)
         free_energy[2].set_color(temperature_color)
         free_energy[3].set_color(entropy_color)

@@ -1,7 +1,9 @@
 from manim import *
 
+import pickle
+
 from utils.utils import bool2color, update_colors2, logistic
-from utils.grid import Grid, make_grid, update_circle_grid, circles_to_squares, add_boundaries, zoom_out
+from utils.grid import Grid, make_grid, tracking_boundaries, update_circle_grid, circles_to_squares, add_boundaries, zoom_out
 from utils.GLOBAL_VALUES import *
 
 """
@@ -64,3 +66,21 @@ class Ising_2D(Scene):
             self.play(pointer_movement, *update_colors2(grid, 'squares', colors), run_time=0.1, rate_function=linear)
      
         self.play(*add_boundaries(grid, stroke_width=10))
+
+class TrackingBoundaries(Scene):
+    def construct(self):
+        shape = (10, 20)
+        ising = Ising2D(shape)
+
+        grid = make_grid(ising.state == 1, self, radius=0.2)
+        # with open('/home/nikos/aaa.pickle', 'wb') as f:
+        #    pickle.dump(grid, f)
+
+        # with open('/home/nikos/aaa.pickle', 'rb') as f:
+        #    grid = pickle.load(f)
+
+        circles_to_squares(grid, self)
+        # grid2 = NumberPlane()
+        # self.add(grid2)
+        tracking_boundaries(grid, self)
+        self.wait(2)

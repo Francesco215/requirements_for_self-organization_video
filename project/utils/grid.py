@@ -174,9 +174,7 @@ def add_boundaries(grid: Grid) -> list[Animation]:
         end2 = square.get_corner(end)
         line = Line(
             start=start2,
-            end=end2,
-            color=hamiltonian_color,
-            stroke_width=2
+            end=end2
         )
         grid['boundaries'].add(line)
         animations.append(Create(line))
@@ -188,16 +186,16 @@ def add_boundaries(grid: Grid) -> list[Animation]:
     for x, (squares_row, neighbours_row) in enumerate(zip(squares_as_table, neighbours_as_table)):
         for y, (square, neighbours) in enumerate(zip(squares_row, neighbours_row)):
             k = (x, y)
-            add2 = lambda v: square2borders.setdefault(k, []).append(v)
+            add2 = lambda v, side: square2borders.setdefault(k, []).append((v, side))
             left, right, top, down = neighbours
             if left is None or left.color != square.color:
-                add2(add(UP + LEFT, DOWN + LEFT))
+                add2(add(UP + LEFT, DOWN + LEFT), 'l')
             if right is None or right.color != square.color:
-                add2(add(UP + RIGHT, DOWN + RIGHT))
+                add2(add(UP + RIGHT, DOWN + RIGHT), 'r')
             if top is None or top.color != square.color:
-                add2(add(UP + LEFT, UP + RIGHT))
+                add2(add(UP + LEFT, UP + RIGHT), 't')
             if down is None or down.color != square.color:
-                add2(add(DOWN + LEFT, DOWN + RIGHT))
+                add2(add(DOWN + LEFT, DOWN + RIGHT), 'd')
     return animations, square2borders
 
 
@@ -346,12 +344,134 @@ def connect_lines(path):
     return result
 
 
+def get_intersection_point(line_1, line_2):
+    common = set([as_key(line_1.get_start()), as_key(line_1.get_end())]).intersection(
+        set([as_key(line_2.get_start()), as_key(line_2.get_end())])
+    )
+    return list(common)[0]
+
+
+def find_corners(as_ones_and_zeros, square2borders):
+    corners = []
+    rows_num = len(as_ones_and_zeros)
+    cols_num = len(as_ones_and_zeros[0])
+    for i, row in enumerate(as_ones_and_zeros):
+        for j, v in enumerate(row):
+            if v == 1:
+                squares_to_check = [
+                    (0, {'white': (i - 1, j - 1), 'black': [(i - 1, j), (i, j - 1)]}),
+                    (1, {'white': (i - 1, j + 1), 'black': [(i, j + 1), (i - 1, j)]}),
+                    (2, {'white': (i + 1, j + 1), 'black': [(i, j + 1), (i + 1, j)]}),
+                    (3, {'white': (i + 1, j - 1), 'black': [(i, j - 1), (i + 1, j)]})
+                ]
+                squares_to_check = [(idx, item) for idx, item in squares_to_check if item['white'][0] >= 0 and item['white'][1] >= 0 and item['white'][0] < rows_num and item['white'][1] < cols_num]
+                tmp = []
+                for idx, item in squares_to_check:
+                    i2, j2 = item['white']
+                    if as_ones_and_zeros[i2][j2] == 1 and all([as_ones_and_zeros[i3][j3] == 0 for i3, j3 in item['black']]):
+                        tmp.append(idx)
+                if tmp:
+                    corners.append((i, j, tmp))
+
+    corners2 = []
+    for i, j, square_corners in corners:
+        borders = square2borders[(i, j)]
+        side2line = {}
+        for line, side in borders:
+            side2line[side] = line
+        for corner in square_corners:
+            if corner == 0:
+                s1 = 'l'
+                s2 = 't'
+            elif corner == 1:
+                s1 = 't'
+                s2 = 'r'
+            elif corner == 2:
+                s1 = 'r'
+                s2 = 'd'
+            else:
+                s1 = 'l'
+                s2 = 'd'
+            corners2.append(get_intersection_point(side2line[s1], side2line[s2]))
+    return corners2
+
+
+def shorten_line(start_or_end, line):
+    start = line.get_start()
+    end = line.get_end()
+    s_x, s_y, _ = start
+    e_x, e_y, _ = end
+    delta = 0.13
+    if s_x == e_x: # vertical line
+        if start_or_end == 's':
+            if s_y > e_y:
+                start = np.array([s_x, s_y - delta, 0])
+            else:
+                start = np.array([s_x, s_y + delta, 0])
+        else:
+            if s_y > e_y:
+                end = np.array([e_x, e_y + delta, 0])
+            else:
+                end = np.array([e_x, e_y - delta, 0])
+    else:
+        if start_or_end == 's':
+            if s_x < e_x:
+                start = np.array([s_x + delta, s_y, 0])
+            else:
+                start = np.array([s_x - delta, s_y, 0])
+        else:
+            if s_x < e_x:
+                end = np.array([e_x - delta, e_y, 0])
+            else:
+                end = np.array([e_x + delta, e_y, 0])
+    return Line(start, end)
+
+
+def round_corners(path, corners):
+    result = []
+    prev = path[0]
+    for curr in path[1:]:
+        diag = []
+        if as_key(prev.get_end()) in corners:
+            if as_key(prev.get_end()) == as_key(curr.get_start()):
+                prev = shorten_line('e', prev)
+                curr = shorten_line('s', curr)
+                diag.append(Line(prev.get_end(), curr.get_start()))
+            elif as_key(prev.get_end()) == as_key(curr.get_end()):
+                prev = shorten_line('e', prev)
+                curr = shorten_line('e', curr)
+                diag.append(Line(prev.get_end(), curr.get_end()))
+
+        if as_key(prev.get_start()) in corners:
+            if as_key(prev.get_start()) == as_key(curr.get_end()):
+                prev = shorten_line('s', prev)
+                curr = shorten_line('e', curr)
+                diag.append(Line(prev.get_start(), curr.get_end()))
+            elif as_key(prev.get_start()) == as_key(curr.get_start()):
+                prev = shorten_line('s', prev)
+                curr = shorten_line('s', curr)
+                diag.append(Line(prev.get_start(), curr.get_start()))
+
+        result.append(prev)
+        result += diag
+        prev = curr
+    result.append(curr)
+    return result
+
+
 def tracking_boundaries(grid, scene):
     _, square2borders = add_boundaries(grid)
     islands, as_ones_and_zeros = find_islands(grid)
+    debug = False
+
+    corners = find_corners(as_ones_and_zeros, square2borders)
+    if debug:
+        for point in corners:
+            dot = Dot(color=GREEN)
+            dot.move_to(point)
+            scene.add(dot)
 
     how_many = None
-    debug = False
     if debug:
         as_ones_and_zeros2 = []
         for row in as_ones_and_zeros:
@@ -376,7 +496,7 @@ def tracking_boundaries(grid, scene):
             borders = square2borders.get(square)
             if borders is None:
                 continue
-            for line in borders:
+            for line, _ in borders:
                 lines.setdefault(as_key(line.get_start()), []).append((square_id, line))
                 lines.setdefault(as_key(line.get_end()), []).append((square_id, line))
             square_id += 1
@@ -416,7 +536,9 @@ def tracking_boundaries(grid, scene):
         path2.add_updater(partial(update_path, dot))
 
         current_position = as_key(init_position)
-        for step, line in enumerate(connect_lines(path)):
+        path = connect_lines(path)
+        path = round_corners(path, corners)
+        for step, line in enumerate(path):
             if current_position != as_key(line.get_start()):
                 move_to = line.get_start()
             else:

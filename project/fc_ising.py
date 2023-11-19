@@ -6,10 +6,6 @@ from utils.GLOBAL_VALUES import *
 from utils.utils import *
 
 
-def logistic(x, start_value, end_value, transition_speed = 1):
-    return start_value + (end_value - start_value) / (1 + np.exp(-transition_speed * x )) 
-
-
 def get_distance_between_centers(circles: VGroup|list, angles: np.array) -> float:
     assert len(circles) >= 2
 
@@ -89,18 +85,18 @@ class FullyConnected(Scene):
             idx=np.random.randint(0,len(circles))
             lines, destinations, create, uncreate = lines2circle(circles, idx)
             # maby pick other run_time to make animation smoother
-            self.play(*create, run_time=0.5, rate_func=linear)
+            self.play(*create, run_time=0.2, rate_func=linear)
             flying = []
             for line, dst in zip(lines, destinations):
                 flying.append(line.animate.shift(dst - line.get_end()))
-            self.play(*flying, run_time=3, rate_func=linear)
+            self.play(*flying, run_time=0.5, rate_func=linear)
 
             for line in lines:
                 start_point = line.get_start()
                 end_point = line.get_end()
                 line.put_start_and_end_on(end_point, start_point)
 
-            self.play(*uncreate, run_time=0.5, rate_func=linear)
+            self.play(*uncreate, run_time=0.1, rate_func=linear)
         hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j').shift(4*RIGHT,2*UP)
         hamiltonian[0].set_color(hamiltonian_color)
         hamiltonian[2].set_color(spin_color)
@@ -119,7 +115,7 @@ class FullyConnected(Scene):
         self.play(Create(slider))
         self.play(Create(pointer),Write(temp_tex))
 
-        for t in np.linspace(-10, 10, 100):
+        for t in np.linspace(-10, 10, 1000):
             temperature = logistic(t, start_value=2., end_value=.9, transition_speed=1)
             pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+2.6*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)

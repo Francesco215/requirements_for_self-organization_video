@@ -109,9 +109,8 @@ def circles_to_squares(grid: Grid, scene: Scene):
             color = BLACK
         square = Square(
             color=color,
-            side_length=circle.radius * 2 + grid['between_space'],
-            stroke_width=2,
-            stroke_color=color,
+            side_length=circle.radius * 2 + grid['between_space'] + 0.01,
+            stroke_width=0,
             fill_color=color,
             fill_opacity=1
         )

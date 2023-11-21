@@ -548,11 +548,19 @@ def tracking_boundaries(grid, scene):
             current_position = as_key(move_to)
         idx2dot[idx] = dot
 
+    removed_dots = []
     for k in sorted(steps.keys()):
         step = steps[k]
         tmp = []
+        used_dots = []
         for idx, move_to in step:
             anim = idx2dot[idx].animate.move_to(move_to)
             tmp.append(anim)
-
+            used_dots.append(idx)
         scene.play(*tmp, rate_func=linear, run_time=0.5)
+        dots_to_remove = set(idx2dot.keys()) - set(used_dots) - set(removed_dots)
+        for idx in dots_to_remove:
+            scene.remove(idx2dot[idx])
+            removed_dots.append(idx)
+    for idx in used_dots:
+        scene.remove(idx2dot[idx])

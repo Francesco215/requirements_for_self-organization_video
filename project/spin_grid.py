@@ -5,6 +5,7 @@ import pickle
 from utils.utils import bool2color, update_colors2, logistic
 from utils.grid import Grid, make_grid, tracking_boundaries, update_circle_grid, circles_to_squares, add_boundaries, zoom_out
 from utils.GLOBAL_VALUES import *
+import matplotlib.pyplot as plt
 
 """
     Take this code as a rough blueprint, I have written it whithout using classes, but if you prefer to do it in a object oriented way feel free to do so
@@ -84,4 +85,61 @@ class TrackingBoundaries(Scene):
         # grid2 = NumberPlane()
         # self.add(grid2)
         tracking_boundaries(grid, self)
+        self.wait(2)
+
+
+cmap = plt.get_cmap("viridis")
+
+
+def get_manim_color(value):
+    # value from 0 to 1
+    r, g, b, _ = cmap(value)
+    return rgb_to_color([r, g, b])
+
+
+colors_num = 10
+colors = [get_manim_color(v / colors_num) for v in range(colors_num)]
+
+
+def tokenization(text):
+    text_obj = Text(''.join(text))
+    create = FadeIn(text_obj)
+    background = BackgroundRectangle(text_obj, color=RED)
+    top_left = background.get_corner(UL)
+    bottom_left = background.get_corner(DL)
+    _, y_top, _ = top_left
+    _, y_bottom, _ = bottom_left
+    colorize = []
+    offset = 0
+    prev_x_right = None
+    for i, token in enumerate(text):
+        color = colors[i % len(colors)]
+        token_len = len(token.strip())
+        background = BackgroundRectangle(text_obj[offset:][:token_len], color=color)
+        x_left, _, _ = background.get_corner(UL)
+        x_right, _, _ = background.get_corner(UR)
+        if prev_x_right is not None:
+            x_left = prev_x_right
+        corners = [
+            (x_left, y_bottom, 0),
+            (x_right, y_bottom, 0),
+            (x_right, y_top, 0),
+            (x_left, y_top, 0)
+        ]
+        background.set_points_as_corners(corners)
+        colorize.append(
+            FadeIn(background)
+        )
+        offset += token_len
+        prev_x_right = x_right
+    return create, colorize
+
+
+class ColorText(Scene):
+    def construct(self):
+        create, colorize = tokenization(
+            ['Many',' words ',' map',' to',' one',' token']
+        )
+        self.play(create, run_time=2)
+        self.play(*colorize, run_time=2)
         self.wait(2)

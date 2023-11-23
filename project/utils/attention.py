@@ -1,6 +1,9 @@
 from manim import *
 from matplotlib import pyplot as plt
 
+from utils.grid import eq_position
+
+
 cmap = plt.get_cmap("viridis")
 
 
@@ -25,6 +28,7 @@ def tokenization(text):
     colorize = []
     offset = 0
     prev_x_right = None
+    backgrounds = []
     for i, token in enumerate(text):
         color = colors[i % len(colors)]
         token_len = len(token.strip())
@@ -45,4 +49,48 @@ def tokenization(text):
         )
         offset += token_len
         prev_x_right = x_right
-    return create, colorize
+        backgrounds.append(background)
+    return {
+        'create': create,
+        'colorize': colorize,
+
+        'text_obj': text_obj,
+        'backgrounds': backgrounds,
+    }
+
+
+def tokens_to_variables(item):
+    words2circles = []
+    circles = []
+    vars = []
+    for i, background in enumerate(item['backgrounds']):
+        _, y_top, _ = background.get_corner(UL)
+        _, y_down, _ = background.get_corner(DL)
+        radius = (y_top - y_down) / 2
+        circle = Circle(
+            radius=radius,
+            fill_color=background.fill_color,
+            fill_opacity=1,
+            stroke_width=0
+        )
+        var = MathTex(f"s_{i}")
+        circle = VGroup(var, circle)
+        circles.append(circle)
+        eq_position(circle, background)
+        words2circles += [
+            Transform(
+                background,
+                circle,
+                rate_func=smooth,
+            )
+        ]
+        vars.append(FadeIn(var))
+
+    for i, circle in enumerate(circles):
+        if i == 0:
+            continue
+        circle.next_to(circles[i - 1], RIGHT, buff=0.1)
+    return {
+        'words2circles': words2circles,
+        'vars': vars
+    }

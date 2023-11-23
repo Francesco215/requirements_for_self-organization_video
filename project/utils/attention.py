@@ -63,6 +63,7 @@ def tokens_to_variables(item):
     words2circles = []
     circles = []
     vars = []
+    circles2 = []
     for i, background in enumerate(item['backgrounds']):
         _, y_top, _ = background.get_corner(UL)
         _, y_down, _ = background.get_corner(DL)
@@ -75,22 +76,35 @@ def tokens_to_variables(item):
         )
         var = MathTex(f"s_{i}")
         circle = VGroup(var, circle)
-        circles.append(circle)
         eq_position(circle, background)
-        words2circles += [
-            Transform(
-                background,
-                circle,
-                rate_func=smooth,
-            )
-        ]
+        circle.add(var)
+        circles2.append(circle)
+        anim = Transform(
+            background,
+            circle,
+            rate_func=smooth,
+        )
+        circles.append(anim.mobject)
+        words2circles.append(anim)
         vars.append(FadeIn(var))
 
-    for i, circle in enumerate(circles):
+    for i, circle in enumerate(circles2):
         if i == 0:
             continue
-        circle.next_to(circles[i - 1], RIGHT, buff=0.1)
+        circle.next_to(circles2[i - 1], RIGHT, buff=0.1)
     return {
         'words2circles': words2circles,
-        'vars': vars
+        'circles': circles
     }
+
+
+def roll_chain(item):
+    circle_radius = 1.5
+    angle_increment = 360 / len(item['circles'])
+    anims = []
+    for i, obj in enumerate(item['circles']):
+        angle = i * angle_increment
+        x = circle_radius * np.cos(np.deg2rad(angle))
+        y = circle_radius * np.sin(np.deg2rad(angle))
+        anims.append(ApplyMethod(obj.move_to, [x, y, 0]))
+    return anims

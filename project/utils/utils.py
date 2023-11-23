@@ -19,7 +19,7 @@ def update_colors(group: VGroup, new_state: np.array) -> list[Animation]:
     for obj, state in zip(group, new_state.flatten()):
         color = bool2color(state)
         if obj.color != color:
-            animations.append(obj.animate.set_fill(color))
+            animations.append(obj.animate.set_color(color))
 
     return animations
 
@@ -32,3 +32,11 @@ def update_colors2(grid, key, new_state: np.array) -> list[Animation]:
     return anims
 
 
+def update_fill(group: VGroup, new_state: np.array) -> list[Animation]:
+    animations=[]
+    for obj, state in zip(group, new_state.flatten()):
+        color = bool2color(state)
+        if obj.color != color:
+            animations.append(obj.animate.set_fill(color))
+
+    return animations

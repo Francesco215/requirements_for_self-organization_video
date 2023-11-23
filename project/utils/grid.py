@@ -165,7 +165,7 @@ def get_neighbours(objects: list[Mobject], shape):
     return result
 
 
-def add_boundaries(grid: Grid, stroke_width=2) -> list[Animation]:
+def add_boundaries(grid: Grid, stroke_width=4) -> list[Animation]:
     animations = []
     grid['boundaries'] = VGroup()
     def add(start, end):
@@ -510,8 +510,8 @@ def tracking_boundaries(grid, scene):
     idx2dot = {}
     steps = {}
     for idx, path in enumerate(paths[:how_many]):
-        path2 = VMobject(color=hamiltonian_color)
-        dot = Dot(color=hamiltonian_color)
+        path2 = VMobject(color=domain_barrier_color)
+        dot = Dot(color=domain_barrier_color)
 
         if debug:
             for l in path:

@@ -5,11 +5,6 @@ import pickle
 from utils.utils import bool2color, update_colors2, logistic
 from utils.grid import Grid, make_grid, tracking_boundaries, update_circle_grid, circles_to_squares, add_boundaries, zoom_out
 from utils.GLOBAL_VALUES import *
-import matplotlib.pyplot as plt
-
-"""
-    Take this code as a rough blueprint, I have written it whithout using classes, but if you prefer to do it in a object oriented way feel free to do so
-"""
 
 
 class Test(Scene):
@@ -69,77 +64,98 @@ class Ising_2D(Scene):
         animations, _ = add_boundaries(grid, stroke_width=10)
         self.play(*animations)
 
-class TrackingBoundaries(Scene):
+class Peiels2D(Scene):
     def construct(self):
         shape = (10, 20)
-        ising = Ising2D(shape)
+        # Create a 10x20 array filled with zeros
+        array = [[-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1,  1,  1,  1,  1,  1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1,  1,  1,  1,  1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1,  1,  1,  1,  1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1,  1,  1,  1,  1,  1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1,  1,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1,  1,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]]
+
+        array=np.array(array)
+
+        ising = Ising2D(shape, starting_state=array)
+        
+        print(ising.state)
 
         grid = make_grid(ising.state == 1, self, radius=0.2)
-        # with open('/home/nikos/aaa.pickle', 'wb') as f:
-        #    pickle.dump(grid, f)
-
-        # with open('/home/nikos/aaa.pickle', 'rb') as f:
-        #    grid = pickle.load(f)
 
         circles_to_squares(grid, self)
-        # grid2 = NumberPlane()
-        # self.add(grid2)
+
+        self.wait(1)
+
+        free_energy=MathTex('\Delta','F','=','\Delta','E','-','T','\Delta','S').shift(3*UP)
+        free_energy[1].set_color(hamiltonian_color)
+        free_energy[4].set_color(hamiltonian_color)
+        free_energy[6].set_color(temperature_color)
+        free_energy[8].set_color(entropy_color)
+
+        self.play(Write(free_energy))        
+        self.wait(1)
+
+        annotation=MathTex('\Delta', 'E', '=2J','\mathcal P').shift(3*DOWN)
+        annotation[1].set_color(hamiltonian_color)
+        annotation[3].set_color(domain_barrier_color)
+        self.play(Write(annotation))
+        self.wait(1)
         tracking_boundaries(grid, self)
+
+        target=MathTex('\Delta','F','=','2J','\mathcal P','-','T','\Delta','S').next_to(free_energy,0)
+        target[1].set_color(hamiltonian_color)
+        target[4].set_color(domain_barrier_color)
+        target[6].set_color(temperature_color)
+        target[8].set_color(entropy_color)
+
+        self.play(Transform(free_energy,target))
+        self.wait(1)
+
+        target=MathTex('\Omega','(','\mathcal P',')','\le 3^','\mathcal P').next_to(annotation,0)
+        target[0].set_color(entropy_color)
+        target[2].set_color(domain_barrier_color)
+        target[-1].set_color(domain_barrier_color)
+
+        self.play(Transform(annotation,target))
+        self.wait(1)
+
+        target=MathTex('\Delta','S','\le', '\mathcal P','\log 3').next_to(annotation,0)
+
+        target[1].set_color(entropy_color)
+        target[3].set_color(domain_barrier_color)
+        self.play(Transform(annotation,target))
+        self.wait(1)
+
+
+        target=MathTex('\Delta','F','\ge','2J','\mathcal P','-','T','\mathcal P','\log 3').next_to(free_energy,0)
+        target[1].set_color(hamiltonian_color)
+        target[4].set_color(domain_barrier_color)
+        target[6].set_color(temperature_color)
+        target[-2].set_color(domain_barrier_color)
+
+        self.play(Transform(free_energy,target), FadeOut(annotation))
+        self.wait(1)
+
+
+        target=MathTex('\Delta','F','\ge','\mathcal P','(2J-','T','\log3)').next_to(free_energy,0)
+        target[1].set_color(hamiltonian_color)
+        target[3].set_color(domain_barrier_color)
+        target[5].set_color(temperature_color)
+
+        self.play(Transform(free_energy,target))
+        self.wait(1)
+
+        annotation=MathTex('T','\le \\frac{2J}{\log 3}').next_to(annotation,0)
+        annotation[0].set_color(temperature_color)
+        self.play(Write(annotation))
+        self.wait(1)
+
+
+
         self.wait(2)
 
-
-cmap = plt.get_cmap("viridis")
-
-
-def get_manim_color(value):
-    # value from 0 to 1
-    r, g, b, _ = cmap(value)
-    return rgb_to_color([r, g, b])
-
-
-colors_num = 10
-colors = [get_manim_color(v / colors_num) for v in range(colors_num)]
-
-
-def tokenization(text):
-    text_obj = Text(''.join(text))
-    create = FadeIn(text_obj)
-    background = BackgroundRectangle(text_obj, color=RED)
-    top_left = background.get_corner(UL)
-    bottom_left = background.get_corner(DL)
-    _, y_top, _ = top_left
-    _, y_bottom, _ = bottom_left
-    colorize = []
-    offset = 0
-    prev_x_right = None
-    for i, token in enumerate(text):
-        color = colors[i % len(colors)]
-        token_len = len(token.strip())
-        background = BackgroundRectangle(text_obj[offset:][:token_len], color=color)
-        x_left, _, _ = background.get_corner(UL)
-        x_right, _, _ = background.get_corner(UR)
-        if prev_x_right is not None:
-            x_left = prev_x_right
-        corners = [
-            (x_left, y_bottom, 0),
-            (x_right, y_bottom, 0),
-            (x_right, y_top, 0),
-            (x_left, y_top, 0)
-        ]
-        background.set_points_as_corners(corners)
-        colorize.append(
-            FadeIn(background)
-        )
-        offset += token_len
-        prev_x_right = x_right
-    return create, colorize
-
-
-class ColorText(Scene):
-    def construct(self):
-        create, colorize = tokenization(
-            ['Many',' words ',' map',' to',' one',' token']
-        )
-        self.play(create, run_time=2)
-        self.play(*colorize, run_time=2)
-        self.wait(2)

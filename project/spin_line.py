@@ -100,26 +100,38 @@ class SpinLine(Scene):
 
             self.play(*animations)
 
-        free_energy=MathTex('F','=2','J','-','T','\log(N-1)').next_to(energy,0)
-        free_energy[0].set_color(hamiltonian_color)
-        free_energy[2].set_color(hamiltonian_color)
-        free_energy[4].set_color(temperature_color)
-        free_energy[5].set_color(entropy_color)
+        free_energy=MathTex('\Delta','F','=','2J','-','T','\log(','N-1',')').next_to(energy,0)
+        free_energy[1].set_color(hamiltonian_color)
+        free_energy[5].set_color(temperature_color)
+        free_energy[-3].set_color(entropy_color)
+        free_energy[-2].set_color(entropy_color)
+        free_energy[-1].set_color(entropy_color)
 
         self.play(Transform(energy,free_energy))
         self.wait(1)
 
+
+        self.play(Wiggle(energy[3]))
+        self.wait(1)
+        self.play(Wiggle(energy[4]))
+        self.play(Wiggle(energy[5]))
+        self.wait(1)
+        self.play(Wiggle(energy[-1]),Wiggle(energy[-2]), Wiggle(energy[-3]))
+
+        free_energy=MathTex('\Delta','F','=','2J','-','T','\log(',' \infty',')').next_to(energy,0)
+        free_energy[1].set_color(hamiltonian_color)
+        free_energy[5].set_color(temperature_color)
+        free_energy[6].set_color(entropy_color)
+        free_energy[-3].set_color(entropy_color)
+        free_energy[-2].set_color(entropy_color)
+        free_energy[-1].set_color(entropy_color)
+
+        self.play(Transform(energy,free_energy))
         self.play(FadeOut(text))
 
         text=MathTex('\Delta','F','<0').next_to(text,0)
         text[1].set_color(hamiltonian_color)
         self.play(Write(text))
         self.wait(1)
-
-
-        free_energy=MathTex('J','<\\frac 12','T','\log(N-1)').next_to(energy,0)
-        free_energy[0].set_color(hamiltonian_color)
-        free_energy[2].set_color(temperature_color)
-        free_energy[3].set_color(entropy_color)
-        self.play(Transform(energy,free_energy))
+        self.play(Wiggle(text))
         self.wait(1)

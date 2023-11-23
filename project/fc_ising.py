@@ -81,7 +81,8 @@ class FullyConnected(Scene):
         colors = ising.state==1
         circles = draw_circles(colors).shift(2*LEFT)
         self.play(Create(circles))
-        for _ in range(5):
+        self.wait(1)
+        for _ in range(10):
             idx=np.random.randint(0,len(circles))
             lines, destinations, create, uncreate = lines2circle(circles, idx)
             # maby pick other run_time to make animation smoother
@@ -97,6 +98,7 @@ class FullyConnected(Scene):
                 line.put_start_and_end_on(end_point, start_point)
 
             self.play(*uncreate, run_time=0.1, rate_func=linear)
+        self.wait(1)
         hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j').shift(4*RIGHT,2*UP)
         hamiltonian[0].set_color(hamiltonian_color)
         hamiltonian[2].set_color(spin_color)
@@ -121,7 +123,7 @@ class FullyConnected(Scene):
             colors = ising.simulation_steps(temperature, 5)
 
             # Use there rate_func to control the animation substeps
-            self.play(pointer_movement, *update_colors(circles, colors), run_time=0.1, rate_func=linear)
+            self.play(pointer_movement, *update_fill(circles, colors), run_time=0.1, rate_func=linear)
 
 
 

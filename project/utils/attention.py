@@ -1,3 +1,5 @@
+import random
+
 from manim import *
 from matplotlib import pyplot as plt
 
@@ -108,3 +110,19 @@ def roll_chain(item):
         y = circle_radius * np.sin(np.deg2rad(angle))
         anims.append(ApplyMethod(obj.move_to, [x, y, 0]))
     return anims
+
+
+def connect_tokens(circles, line):
+    lines = []
+    for i, row in enumerate(line):
+        for j, val in enumerate(row):
+            if val == 1:
+                c_i = circles[i]
+                c_j = circles[j]
+                line = Line(
+                    c_i.get_center(),
+                    c_j.get_center(),
+                    color=random.choice(colors)
+                )
+                lines.append(Create(line))
+    return lines

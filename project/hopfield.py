@@ -37,7 +37,7 @@ from numpy.random import randint
 
 
 def random_binary_string():
-    return f'{randint(2**6):6b}'.replace(' ','0')
+    return f'{randint(2**8):8b}'.replace(' ','0')
 
 class AddressTable(Scene):
     def construct(self):
@@ -48,3 +48,12 @@ class AddressTable(Scene):
         table_tex=Table(table, col_labels=[Text('Address'),Text('Value')]).scale(0.5)
 
         self.play(Write(table_tex))
+        self.wait()
+
+        self.play(Wiggle(table_tex.get_entries((7,0))))
+        self.wait()
+
+
+        self.play(Wiggle(table_tex.get_entries((6,1))))
+        self.wait()
+        

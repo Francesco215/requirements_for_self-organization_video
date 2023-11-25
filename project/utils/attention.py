@@ -1,5 +1,10 @@
+import random
+
 from manim import *
 from matplotlib import pyplot as plt
+
+from utils.grid import eq_position
+
 
 cmap = plt.get_cmap("viridis")
 
@@ -25,6 +30,7 @@ def tokenization(text):
     colorize = []
     offset = 0
     prev_x_right = None
+    backgrounds = []
     for i, token in enumerate(text):
         color = colors[i % len(colors)]
         token_len = len(token.strip())
@@ -45,4 +51,78 @@ def tokenization(text):
         )
         offset += token_len
         prev_x_right = x_right
-    return create, colorize
+        backgrounds.append(background)
+    return {
+        'create': create,
+        'colorize': colorize,
+
+        'text_obj': text_obj,
+        'backgrounds': backgrounds,
+    }
+
+
+def tokens_to_variables(item):
+    words2circles = []
+    circles = []
+    vars = []
+    circles2 = []
+    for i, background in enumerate(item['backgrounds']):
+        _, y_top, _ = background.get_corner(UL)
+        _, y_down, _ = background.get_corner(DL)
+        radius = (y_top - y_down) / 2
+        circle = Circle(
+            radius=radius,
+            fill_color=background.fill_color,
+            fill_opacity=1,
+            stroke_width=0
+        )
+        var = MathTex(f"s_{i}")
+        circle = VGroup(var, circle)
+        eq_position(circle, background)
+        circle.add(var)
+        circles2.append(circle)
+        anim = Transform(
+            background,
+            circle,
+            rate_func=smooth,
+        )
+        circles.append(anim.mobject)
+        words2circles.append(anim)
+        vars.append(FadeIn(var))
+
+    for i, circle in enumerate(circles2):
+        if i == 0:
+            continue
+        circle.next_to(circles2[i - 1], RIGHT, buff=0.1)
+    return {
+        'words2circles': words2circles,
+        'circles': circles
+    }
+
+
+def roll_chain(item):
+    circle_radius = 1.5
+    angle_increment = 360 / len(item['circles'])
+    anims = []
+    for i, obj in enumerate(item['circles']):
+        angle = i * angle_increment
+        x = circle_radius * np.cos(np.deg2rad(angle))
+        y = circle_radius * np.sin(np.deg2rad(angle))
+        anims.append(ApplyMethod(obj.move_to, [x, y, 0]))
+    return anims
+
+
+def connect_tokens(circles, line):
+    lines = []
+    for i, row in enumerate(line):
+        for j, val in enumerate(row):
+            if val == 1:
+                c_i = circles[i]
+                c_j = circles[j]
+                line = Line(
+                    c_i.get_center(),
+                    c_j.get_center(),
+                    color=random.choice(colors)
+                )
+                lines.append(Create(line))
+    return lines

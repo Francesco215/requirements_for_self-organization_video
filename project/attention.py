@@ -1,16 +1,27 @@
+import random
+
 from manim import *
 
+from utils.attention import tokenization, tokens_to_variables, roll_chain, connect_tokens
 
-from utils.utils import bool2color, update_colors2, logistic
-from utils.grid import Grid, make_grid, tracking_boundaries, update_circle_grid, circles_to_squares, add_boundaries, zoom_out
-from utils.GLOBAL_VALUES import *
-from utils.attention import tokenization
 
 class ColorText(Scene):
     def construct(self):
-        create, colorize = tokenization(
-            ['Many',' words ',' map',' to',' one',' token']
+        words = ['Many',' words ',' map',' to',' one',' token']
+        item = tokenization(
+            [random.choice(words) for _ in range(10)]
         )
-        self.play(create, run_time=2)
-        self.play(*colorize, run_time=2)
+        self.play(item['create'], run_time=2)
+        self.play(*item['colorize'], run_time=2)
+
+        item2 = tokens_to_variables(item)
+        self.play(FadeOut(item['text_obj']))
+        self.play(*item2['words2circles'], run_time=2)
+        anims = roll_chain(item2)
+        self.play(*anims, run_time=2)
+
+        circles_num = len(item2['circles'])
+        line = np.random.randint(2, size=(circles_num, circles_num))
+        anims = connect_tokens(item2['circles'], line)
+        self.play(*anims, run_time=2)
         self.wait(2)

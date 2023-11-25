@@ -5,6 +5,9 @@ from utils.attention import *
 
 class ColorText(Scene):
     def construct(self):
+        # plane = NumberPlane()
+        # self.add(plane)
+
         words = ['Many',' words ',' map',' to',' one',' token']
         item = tokenization(
             [random.choice(words) for _ in range(10)]

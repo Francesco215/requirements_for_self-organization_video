@@ -15,8 +15,8 @@ class ColorText(Scene):
         item2 = tokens_to_variables(item)
         self.play(FadeOut(item['text_obj']))
         self.play(*item2['words2circles'], run_time=2)
-        anims = roll_chain(item2)
-        self.play(*anims, run_time=2)
+        item4 = roll_chain(item2)
+        self.play(*item4['anims'], run_time=2)
 
         circles_num = len(item2['circles'])
         line = np.random.randint(2, size=(circles_num, circles_num))

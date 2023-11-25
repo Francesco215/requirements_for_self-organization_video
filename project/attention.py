@@ -1,8 +1,6 @@
 import random
 
-from manim import *
-
-from utils.attention import tokenization, tokens_to_variables, roll_chain, connect_tokens
+from utils.attention import *
 
 
 class ColorText(Scene):
@@ -22,6 +20,16 @@ class ColorText(Scene):
 
         circles_num = len(item2['circles'])
         line = np.random.randint(2, size=(circles_num, circles_num))
-        anims = connect_tokens(item2['circles'], line)
-        self.play(*anims, run_time=2)
+        item3 = connect_tokens(item2['circles'], line)
+        self.play(*item3['animations'], run_time=2)
+
+        links = []
+        connections = list(item3['lines'].keys())
+        for _ in range(3):
+            links.append(random.choice(connections))
+
+        anim1, rotations = highlight_links(links, item3['lines'])
+        self.play(*anim1)
+        for r in rotations:
+            self.play(*r)
         self.wait(2)

@@ -19,7 +19,7 @@ def energy_2d_hopfield(ic,jc,state:np.array, patterns:np.array, neighborhood:lis
 
     return delta_E
 
-class FC_Hopfield:
+class Hopfield_2D:
     def __init__(self,patterns,starting_state=None):
         # make sure that patterns is all made of +1 or -1 values
         assert np.all(patterns==1 or patterns==-1)

@@ -11,10 +11,10 @@ def hopfield_energy(overlaps:np.array, J=1):
 class FC_Hopfield:
     def __init__(self,patterns,starting_state=None):
         #make sure that patterns is all made of +1 or -1 values
-        assert np.all(patterns==1 or patterns==-1)
-        self.shape = patterns.shape
+        assert np.all(np.logical_or(patterns==1,patterns==-1))
+        self.shape = patterns.shape[1:]
         if starting_state is not None:
-            assert patterns.shape == starting_state.shape
+            assert patterns.shape[1:] == starting_state.shape
         else:
             starting_state = np.random.choice([-1, 1], size=self.shape)
 
@@ -22,12 +22,12 @@ class FC_Hopfield:
         self.patterns=squeeze(patterns)
         self.lenght=self.shape[0]*self.shape[1]
 
-        self.overlaps=np.matmul(self.patterns,self.starting_state)
+        self.overlaps=np.matmul(self.patterns,self.state)
         self.J=-1
         self.energy=hopfield_energy(self.overlaps,self.J)
 
     
-    def simulation_steps(self, temperature:float, n_steps:int)->np.array:
+    def simulation_steps(self, n_steps:int, temperature:float)->np.array:
         for _ in range(n_steps):
             # Select a random site in the chain
             site = np.random.randint(0, self.lenght)
@@ -43,3 +43,5 @@ class FC_Hopfield:
                 self.state[site] *= -1
                 self.energy = new_energy
                 self.overlaps = new_overlaps
+
+        return self.state

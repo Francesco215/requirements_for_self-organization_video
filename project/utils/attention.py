@@ -104,11 +104,28 @@ def roll_chain(item):
     circle_radius = 1.5
     angle_increment = 360 / len(item['circles'])
     anims = []
+    init_positions = []
     for i, obj in enumerate(item['circles']):
         angle = i * angle_increment
         x = circle_radius * np.cos(np.deg2rad(angle))
         y = circle_radius * np.sin(np.deg2rad(angle))
+        init_positions.append({
+            'circle': obj,
+            'position': obj.get_center()
+        })
         anims.append(ApplyMethod(obj.move_to, [x, y, 0]))
+    return {
+        'anims': anims,
+        'init_positions': init_positions
+    }
+
+
+def unroll_chain(item):
+    anims = []
+    for v in item['init_positions']:
+        anims.append(
+            ApplyMethod(v['circle'].move_to, v['position'])
+        )
     return anims
 
 

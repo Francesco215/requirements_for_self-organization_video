@@ -33,3 +33,21 @@ class ColorText(Scene):
         for r in rotations:
             self.play(*r)
         self.wait(2)
+
+
+class RollAndUnroll(Scene):
+    def construct(self):
+        words = ['Many', ' words ', ' map', ' to', ' one', ' token']
+        item = tokenization(
+            [random.choice(words) for _ in range(10)]
+        )
+        self.play(item['create'], run_time=2)
+        self.play(*item['colorize'], run_time=2)
+
+        item2 = tokens_to_variables(item)
+        self.play(FadeOut(item['text_obj']))
+        self.play(*item2['words2circles'], run_time=2)
+        item3 = roll_chain(item2)
+        self.play(*item3['anims'], run_time=2)
+        self.play(*unroll_chain(item3), run_time=2)
+        self.wait(2)

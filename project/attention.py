@@ -8,10 +8,10 @@ class ColorText(Scene):
         # plane = NumberPlane()
         # self.add(plane)
 
-        words = ['Many',' words ',' map',' to',' one',' token']
-        item = tokenization(
-            [random.choice(words) for _ in range(10)]
-        )
+        #words = ['Many',' words ',' map',' to',' one',' token']
+        words = ['Chapter',' 1',':',' To',' you',',',' ','200','0',' years',' later']
+        
+        item = tokenization(words)
         self.play(item['create'], run_time=2)
         self.play(*item['colorize'], run_time=2)
 
@@ -25,17 +25,18 @@ class ColorText(Scene):
         line = np.random.randint(2, size=(circles_num, circles_num))
         item3 = connect_tokens(item2['circles'], line)
         self.play(*item3['animations'], run_time=2)
+        self.wait()
 
-        links = []
-        connections = list(item3['lines'].keys())
-        for _ in range(3):
-            links.append(random.choice(connections))
+        # links = []
+        # connections = list(item3['lines'].keys())
+        # for _ in range(3):
+        #     links.append(random.choice(connections))
 
-        anim1, rotations = highlight_links(links, item3['lines'])
-        self.play(*anim1)
-        for r in rotations:
-            self.play(*r)
-        self.wait(2)
+        # anim1, rotations = highlight_links(links, item3['lines'])
+        # self.play(*anim1)
+        # for r in rotations:
+        #     self.play(*r)
+        # self.wait(2)
 
 
 class RollAndUnroll(Scene):

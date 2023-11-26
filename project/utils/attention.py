@@ -179,7 +179,7 @@ def connect_tokens(circles, line):
                     c_i.get_center(),
                     c_j.get_center(),
                     color=random.choice(colors)
-                )
+                ).set_z_index(-1)
                 lines[(i, j)] = line
                 animations.append(Create(line))
     return {

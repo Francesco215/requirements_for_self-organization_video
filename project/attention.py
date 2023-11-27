@@ -27,16 +27,16 @@ class ColorText(Scene):
         self.play(*item3['animations'], run_time=2)
         self.wait()
 
-        # links = []
-        # connections = list(item3['lines'].keys())
-        # for _ in range(3):
-        #     links.append(random.choice(connections))
+        links = []
+        connections = list(item3['lines'].keys())
+        for _ in range(3):
+            links.append(random.choice(connections))
 
-        # anim1, rotations = highlight_links(links, item3['lines'])
-        # self.play(*anim1)
+        anim1 = highlight_links(links, item3['lines'])
+        self.play(*anim1)
         # for r in rotations:
         #     self.play(*r)
-        # self.wait(2)
+        self.wait(2)
 
 
 class RollAndUnroll(Scene):

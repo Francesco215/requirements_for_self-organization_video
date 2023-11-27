@@ -166,7 +166,6 @@ def unroll_chain(item):
         )
     return anims
 
-
 def connect_tokens(circles, line):
     lines = {}
     animations = []
@@ -187,48 +186,13 @@ def connect_tokens(circles, line):
         'animations': animations
     }
 
-
+stroke_width=4 #manim default stroke width
 def highlight_links(links, lines):
-    highlited = VGroup()
-    highlited_keys = []
-    for i, j in links:
-        k1 = (i, j)
-        k2 = (j, i)
-        if k1 in lines:
-            highlited.add(lines[k1])
-            highlited_keys += [k1, k2]
-        elif k2 in lines:
-            highlited.add(lines[k2])
-            highlited_keys += [k1, k2]
-    not_highlighted = VGroup(*[lines[k] for k in set(lines.keys()) - set(highlited_keys)])
-    init_width = highlited[0].stroke_width
-
-    angel = round(PI / 50, 2)
-    rotations = []
-    multiplier = 1
-    about_points = [line.get_center() for line in highlited]
-    for _ in range(10):
-        tmp = []
-        for line, about_point in zip(highlited, about_points):
-            tmp.append(
-                Rotating(
-                    line,
-                    radians=angel*multiplier,
-                    run_time=0.5,
-                    about_point=about_point,
-                    rate_func=linear
-                )
-            )
-        if multiplier > 0:
-            multiplier = -2
+    animations=[]
+    for line in lines:
+        if line in links:
+            animations+=[lines[line].animate.set_stroke(width=stroke_width*2)]
         else:
-            multiplier = 2
-        rotations.append(tmp)
+            animations+=[lines[line].animate.set_stroke(width=stroke_width/2, opacity=0.5)]
 
-    return (
-        [
-            highlited.animate.set_stroke(width=2 * init_width),
-            not_highlighted.animate.set_stroke(width=init_width / 2, opacity=0.5),
-        ],
-        rotations
-    )
+    return animations 

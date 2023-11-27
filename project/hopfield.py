@@ -11,14 +11,12 @@ def energy_landscape(x):
     return out
 
 class Hop(Scene):
-
     def construct(self):
         ax = Axes(
             x_range=[0, 10], y_range=[-0.2, 1.1, 10], axis_config={"include_tip": False}
         )
         labels = ax.get_axis_labels(x_label="",y_label="E")
-
-        t = ValueTracker(3.9)
+        t = ValueTracker(4.7)
 
         graph = ax.plot(energy_landscape, color=ORANGE)
 
@@ -27,15 +25,14 @@ class Hop(Scene):
 
         dot.add_updater(lambda x: x.move_to(ax.c2p(t.get_value(), energy_landscape(t.get_value()))))
         x_space = np.linspace(*ax.x_range[:2],200)
-        minimum_index = ((x_space-patterns[1])**2).argmin()
+        minimum_index = ((x_space-patterns[1])**2).argmin()+1
 
         self.add(ax, labels, graph, dot)
-        self.play(t.animate.set_value(x_space[minimum_index]))
+        self.play(t.animate.set_value(x_space[minimum_index]),run_time=3)
         self.wait()
 
+
 from numpy.random import randint
-
-
 def random_binary_string():
     return f'{randint(2**8):8b}'.replace(' ','0')
 

@@ -1,7 +1,7 @@
 import random
 
 from utils.attention import *
-
+from utils.GLOBAL_VALUES import *
 
 class ColorText(Scene):
     def construct(self):
@@ -9,7 +9,7 @@ class ColorText(Scene):
         # self.add(plane)
 
         #words = ['Many',' words ',' map',' to',' one',' token']
-        words = ['Chapter',' 1',':',' To',' you',',',' ','200','0',' years',' later']
+        words = ['Chapter',' 1',':',' To',' you',', ','200','0',' years',' later']
         
         tokens = tokenization(words)
         self.play(tokens['create'], run_time=2)
@@ -18,8 +18,16 @@ class ColorText(Scene):
         spins = tokens_to_variables(tokens)
         self.play(FadeOut(tokens['text_obj']))
         self.play(*spins['words2circles'], run_time=2)
-        item4 = roll_chain(spins)
-        self.play(*item4['anims'], run_time=2)
+        self.wait()
+
+        spin_tex=MathTex('s_i','\in \mathbb R^n').shift(2*UP)
+        spin_tex[0].set_color(spin_color)
+        self.play(Write(spin_tex))
+        self.wait()
+        self.play(FadeOut(spin_tex))
+
+        chain = roll_chain(spins)
+        self.play(*chain['anims'], run_time=2)
 
         circles_num = len(spins['circles'])
         line=np.ones((circles_num,circles_num))
@@ -35,11 +43,15 @@ class ColorText(Scene):
 
         anim1 = highlight_links(links, attention['lines'])
         self.play(*anim1)
-        self.wait(1)
 
         anim2 = normal_links(attention['lines'])
         self.play(*anim2)
 
+        fade_out= fade_lines(attention['lines'])
+        self.play(*fade_out)
+        self.wait(1)
+
+        self.play(*unroll_chain(chain))
         self.wait(2)
 
 

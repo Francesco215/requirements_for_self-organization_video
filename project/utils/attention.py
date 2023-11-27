@@ -196,3 +196,7 @@ def highlight_links(links, lines):
             animations+=[lines[line].animate.set_stroke(width=stroke_width/2, opacity=0.5)]
 
     return animations 
+
+def normal_links(lines):
+    
+   return [lines[line].animate.set_stroke(width=stroke_width) for line in lines]

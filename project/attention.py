@@ -46,28 +46,23 @@ class ColorText(Scene):
 
         anim2 = normal_links(attention['lines'])
         self.play(*anim2)
+        self.wait(1)
+        
+        O_tex=MathTex('~ O(','N','^2)').shift(4*RIGHT)
+        O_tex[1].set_color(spin_color)
+        self.play(Write(O_tex))
+        self.wait(1)
+        self.play(Wiggle(O_tex[1]))
+        self.wait(1)
 
         fade_out= fade_lines(attention['lines'])
-        self.play(*fade_out)
+        self.play(*fade_out,FadeOut(O_tex))
         self.wait(1)
 
         self.play(*unroll_chain(chain))
         self.wait(2)
 
 
-class RollAndUnroll(Scene):
+class ExtendChanDrawLines(Scene):
     def construct(self):
-        words = ['Many', ' words ', ' map', ' to', ' one', ' token']
-        item = tokenization(
-            [random.choice(words) for _ in range(10)]
-        )
-        self.play(item['create'], run_time=2)
-        self.play(*item['colorize'], run_time=2)
-
-        item2 = tokens_to_variables(item)
-        self.play(FadeOut(item['text_obj']))
-        self.play(*item2['words2circles'], run_time=2)
-        item3 = roll_chain(item2)
-        self.play(*item3['anims'], run_time=2)
-        self.play(*unroll_chain(item3), run_time=2)
-        self.wait(2)
+        pass

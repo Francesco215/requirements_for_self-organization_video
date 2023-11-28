@@ -16,7 +16,7 @@ def get_manim_color(value):
     return rgb_to_color([r, g, b])
 
 
-colors_num = 10
+colors_num = 15
 colors = [get_manim_color(v / colors_num) for v in range(colors_num)]
 
 
@@ -74,14 +74,28 @@ def tokenization(text):
         'backgrounds': backgrounds,
     }
 
+spacing = 0.05
+
+
+def calc_radius2(circles_num):
+    return ((config.frame_width / circles_num) / 2) - spacing
+
+
+def position_circles(circles2):
+    total_width = sum(circle.get_width() for circle in circles2) + spacing * len(circles2)
+    start_x = -(total_width / 2)
+    for circle in circles2:
+        circle.next_to(ORIGIN, RIGHT, buff=0)
+        circle.shift(start_x * RIGHT)
+        start_x += circle.get_width() + spacing
+
 
 def tokens_to_variables(item):
     words2circles = []
     circles = []
     vars = []
     circles2 = []
-    spacing = 0.05
-    radius = ((config.frame_width / len(item['backgrounds'])) / 2) - spacing
+    radius = calc_radius2(len(item['backgrounds']))
     for i, background in enumerate(item['backgrounds']):
         circle = Circle(
             radius=radius,
@@ -103,16 +117,12 @@ def tokens_to_variables(item):
         words2circles.append(anim)
         vars.append(FadeIn(var))
 
-    total_width = sum(circle.get_width() for circle in circles2) + spacing * len(circles2)
-    start_x = -(total_width / 2)
-    for circle in circles2:
-        circle.next_to(ORIGIN, RIGHT, buff=0)
-        circle.shift(start_x * RIGHT)
-        start_x += circle.get_width() + spacing
+    position_circles(circles2)
     return {
         'words2circles': words2circles,
-        'circles': circles,
-        'radius': radius
+        'transformed_circles': circles,
+        'radius': radius,
+        'circles': circles2
     }
 
 
@@ -204,3 +214,29 @@ def normal_links(lines):
 def fade_lines(lines):
 
    return [FadeOut(lines[line]) for line in lines]
+
+
+def extend_chain(spins, delta: int, scene):
+    g = VGroup(*spins['circles'])
+    old_radius = spins['circles'][0][0].radius
+    circles_num = len(spins['circles'])
+    for _ in range(delta):
+        circles_num += 1
+        new_radius = calc_radius2(circles_num)
+        scale = new_radius / old_radius
+        scene.play(g.animate.scale(scale), run_time=0.5)
+        scene.play(g.animate.shift(LEFT * (new_radius + spacing)), run_time=0.5)
+        circle = Circle(
+            radius=new_radius,
+            fill_color=colors[circles_num % len(colors)],
+            fill_opacity=1,
+            stroke_width=0
+        )
+
+        var = MathTex("s_{" + str(circles_num - 1) + "}", font_size=g[-1][1].font_size)
+        var.set_z_index(1)
+        circle = VGroup(circle, var)
+        circle.next_to(g[-1], RIGHT, buff=spacing)
+        scene.play(FadeIn(circle), run_time=0.5)
+        g.add(circle)
+        old_radius = new_radius

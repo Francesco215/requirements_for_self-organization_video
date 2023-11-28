@@ -18,6 +18,8 @@ class ColorText(Scene):
         spins = tokens_to_variables(tokens)
         self.play(FadeOut(tokens['text_obj']))
         self.play(*spins['words2circles'], run_time=2)
+        for circle in spins['transformed_circles']:
+            self.remove(circle)
         self.wait()
 
         spin_tex=MathTex('s_i','\in \mathbb R^n').shift(2*UP)
@@ -60,9 +62,22 @@ class ColorText(Scene):
         self.wait(1)
 
         self.play(*unroll_chain(chain))
+        extend_chain(spins, 5, self)
         self.wait(2)
 
 
 class ExtendChanDrawLines(Scene):
     def construct(self):
-        pass
+        plane = NumberPlane()
+        self.add(plane)
+
+        words = ['Chapter', ' 1', ':', ' To', ' you', ', ', '200', '0', ' years', ' later']
+
+        tokens = tokenization(words)
+        self.play(tokens['create'], run_time=2)
+        self.play(*tokens['colorize'], run_time=2)
+        spins = tokens_to_variables(tokens)
+        self.play(FadeOut(tokens['text_obj']))
+        self.play(*spins['words2circles'], run_time=2)
+        for circle in spins['transformed_circles']:
+            self.remove(circle)

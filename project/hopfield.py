@@ -1,3 +1,4 @@
+from utils.GLOBAL_VALUES import *
 from manim import *
 
 def gaussian(x,pattern):
@@ -54,3 +55,94 @@ class AddressTable(Scene):
         self.play(Wiggle(table_tex.get_entries((6,1))))
         self.wait()
         
+class Equations(Scene):
+    def construct(self):
+        hopfield_title=Text('Hopfield Network').shift(2*UP)
+        self.play(Write(hopfield_title))
+        self.wait()
+
+        hamiltonian=MathTex('H','=','-','\sum_{ij}','W_{ij}','s_is_j')
+        hamiltonian[0].set_color(hamiltonian_color)
+        hamiltonian[-1].set_color(spin_color)
+        self.play(Write(hamiltonian))
+        self.wait()
+
+        
+
+        hop=VGroup(hopfield_title,hamiltonian)
+        self.play(hop.animate.shift(3*LEFT))
+
+        
+        ising_title=Text('Ising Model').shift(2*UP)
+        ising_hamiltonian=MathTex('H','=-\sum_{ij}','J','s_is_j')
+        ising_hamiltonian[0].set_color(hamiltonian_color)
+        ising=VGroup(ising_title,ising_hamiltonian).shift(3*RIGHT)
+        self.play(Write(ising_title),Write(ising_hamiltonian))
+        self.wait()
+
+        self.play(Indicate(hamiltonian[-2]))
+        self.wait()
+        self.play(Indicate(ising_hamiltonian[-2]))
+        self.wait()
+
+
+        inter_matrix=MathTex('W_{ij}','=','X_i^TX_j').shift(3*LEFT+2*DOWN)
+        self.play(Write(inter_matrix))
+        self.wait()
+        self.play(Wiggle(inter_matrix[0]))
+        self.wait()
+        self.play(Wiggle(inter_matrix[-1]))
+        self.wait()
+
+
+        self.play(FadeOut(ising))
+        self.wait()
+
+        #derivative of the energy
+        warning_text=Text('Oversimplification!').set_color(RED).shift(3.5*UP)
+        self.play(Write(warning_text))
+        self.wait()
+
+        target_text=MathTex('-{\partial ','H','\over\partial','s_i','}=','\sum_{j}','W_{ij}','s_j').shift(3*LEFT)
+        target_text[1].set_color(hamiltonian_color)
+        target_text[3].set_color(spin_color)
+        target_text[-1].set_color(spin_color)
+        self.play(Transform(hamiltonian,target_text))#this is ugly to look at 
+        self.wait()
+
+
+        target_text=MathTex('\Delta','s_i','\\approx','\sum_{j}','W_{ij}','s_j').shift(3*LEFT)
+        target_text[1].set_color(spin_color)
+        target_text[-1].set_color(spin_color)
+        self.play(Transform(hamiltonian,target_text)) 
+        self.wait()
+
+        trasformer_title=Text('Attention').shift(2*UP)
+        update_rule=MathTex('\Delta','s_i','=','\sum_j','A_{ij}','V_j')
+        update_rule[1].set_color(spin_color)
+        update_rule[-1].set_color(spin_color)
+        attention=MathTex('A_{ij}=','\sigma(K_i^TQ_j)').shift(2*DOWN)
+
+        tr=VGroup(trasformer_title,update_rule,attention).shift(3*RIGHT)
+
+        self.play(Write(trasformer_title),Write(update_rule),Write(attention))
+        self.wait()
+
+
+        target_text=MathTex('\Delta','s_i','\\approx','\sum_{j}','(X_i^TX_j)','s_j').shift(3*LEFT)
+        target_text[1].set_color(spin_color)
+        target_text[-1].set_color(spin_color)
+        self.play(Transform(hamiltonian,target_text),Transform(inter_matrix[-1],target_text[-2]))
+        self.play(FadeOut(inter_matrix)) 
+        self.wait()
+        
+
+
+
+        target_text=MathTex('\Delta','s_i','\\approx','\sum_j','\sigma(K_i^TQ_j)','V_j').shift(3*RIGHT)
+        target_text[1].set_color(spin_color)
+        target_text[-1].set_color(spin_color)
+
+        self.play(Transform(update_rule,target_text),Transform(attention[-1],target_text[-2]))
+        self.play(FadeOut(attention))
+        self.wait()

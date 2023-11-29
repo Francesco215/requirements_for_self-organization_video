@@ -240,3 +240,31 @@ def extend_chain(spins, delta: int, scene):
         scene.play(FadeIn(circle))
         g.add(circle)
         old_radius = new_radius
+    spins['circles'] = g
+
+
+def draw_arrows_for_chain(links, spins):
+    g = VGroup(*spins['circles'])
+    arrows = []
+    for i, row in enumerate(links):
+        for j, val in enumerate(row):
+            if val == 1:
+                c_i = g[i][0]
+                c_j = g[j][0]
+                radius = c_i.radius
+                x_1, y_1, _ = c_i.get_center()
+                x_2, y_2, _ = c_j.get_center()
+                start, end = sorted([
+                    (x_2, y_2 + radius, 0),
+                    (x_1, y_1 + radius, 0)
+                ], key=lambda p: p[0], reverse=True)
+                arc = ArcBetweenPoints(
+                    start=start,
+                    end=end,
+                    stroke_color=YELLOW
+                )
+                arc.add_tip()
+                spins['circles'][i].add(arc)
+                arrows += [Create(arc)]
+    spins['circles'] = g
+    return arrows

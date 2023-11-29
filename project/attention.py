@@ -68,8 +68,8 @@ class ColorText(Scene):
 
 class ExtendChanDrawLines(Scene):
     def construct(self):
-        plane = NumberPlane()
-        self.add(plane)
+        # plane = NumberPlane()
+        # self.add(plane)
 
         words = ['Chapter', ' 1', ':', ' To', ' you', ', ', '200', '0', ' years', ' later']
 
@@ -79,8 +79,18 @@ class ExtendChanDrawLines(Scene):
         spins = tokens_to_variables(tokens)
         self.play(FadeOut(tokens['text_obj']))
         self.play(*spins['words2circles'], run_time=2)
+        links = []
+        for i in range(len(spins['circles'])):
+            row = []
+            for j in range(len(spins['circles'])):
+                if (i, j) in [(0, 4), (6, 9)]:
+                    v = 1
+                else:
+                    v = 0
+                row.append(v)
+            links.append(row)
+        arrows = draw_arrows_for_chain(links, spins)
+        self.play(*arrows)
         for circle in spins['transformed_circles']:
             self.remove(circle)
-
-        extend_chain(spins, 5, self)
-
+        extend_chain(spins, 3, self)

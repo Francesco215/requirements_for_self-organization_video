@@ -79,18 +79,21 @@ class ExtendChanDrawLines(Scene):
         spins = tokens_to_variables(tokens)
         self.play(FadeOut(tokens['text_obj']))
         self.play(*spins['words2circles'], run_time=2)
-        links = []
-        for i in range(len(spins['circles'])):
-            row = []
-            for j in range(len(spins['circles'])):
-                if (i, j) in [(0, 4), (6, 9)]:
-                    v = 1
-                else:
-                    v = 0
-                row.append(v)
-            links.append(row)
-        arrows = draw_arrows_for_chain(links, spins)
-        self.play(*arrows)
-        for circle in spins['transformed_circles']:
-            self.remove(circle)
-        extend_chain(spins, 3, self)
+        # links = []
+        # for i in range(len(spins['circles'])):
+        #     row = []
+        #     for j in range(len(spins['circles'])):
+        #         if (i, j) in [(0, 4), (6, 9)]:
+        #             v = 1
+        #         else:
+        #             v = 0
+        #         row.append(v)
+        #     links.append(row)
+        # arrows = draw_arrows_for_chain(links, spins)
+        # self.play(*arrows)
+        # for circle in spins['transformed_circles']:
+        #     self.remove(circle)
+        #extend_chain(spins, 3, self)
+        square = make_square(2, 4, BLUE, spins)
+        self.play(Create(square))
+        self.wait(2)

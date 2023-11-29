@@ -268,3 +268,22 @@ def draw_arrows_for_chain(links, spins):
                 arrows += [Create(arc)]
     spins['circles'] = g
     return arrows
+
+
+def make_square(start, end, color, spins):
+    left = spins['circles'][start]
+    right = spins['circles'][end]
+    x_l, _, _ = left.get_corner(UL)
+    x_r, _, _ = right.get_corner(UR)
+    side_length = x_r - x_l
+    square = Square(
+        side_length=side_length,
+        color=color,
+        stroke_width=0,
+        fill_color=color,
+        fill_opacity=1
+    )
+    x_center = x_l + (side_length / 2)
+    _, y, _ = left.get_center()
+    square.move_to((x_center, y, 0))
+    return square

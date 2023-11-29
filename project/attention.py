@@ -81,3 +81,6 @@ class ExtendChanDrawLines(Scene):
         self.play(*spins['words2circles'], run_time=2)
         for circle in spins['transformed_circles']:
             self.remove(circle)
+
+        extend_chain(spins, 5, self)
+

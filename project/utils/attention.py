@@ -224,8 +224,8 @@ def extend_chain(spins, delta: int, scene):
         circles_num += 1
         new_radius = calc_radius2(circles_num)
         scale = new_radius / old_radius
-        scene.play(g.animate.scale(scale), run_time=0.5)
-        scene.play(g.animate.shift(LEFT * (new_radius + spacing)), run_time=0.5)
+        scene.play(g.animate.scale(scale))
+        scene.play(g.animate.shift(LEFT * (new_radius + spacing)))
         circle = Circle(
             radius=new_radius,
             fill_color=colors[circles_num % len(colors)],
@@ -237,6 +237,6 @@ def extend_chain(spins, delta: int, scene):
         var.set_z_index(1)
         circle = VGroup(circle, var)
         circle.next_to(g[-1], RIGHT, buff=spacing)
-        scene.play(FadeIn(circle), run_time=0.5)
+        scene.play(FadeIn(circle))
         g.add(circle)
         old_radius = new_radius

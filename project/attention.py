@@ -84,6 +84,5 @@ class ExtendChanDrawLines(Scene):
         for circle in spins['transformed_circles']:
             self.remove(circle)
         extend_chain(spins, 3, self)
-        square = make_square(2, 4, BLUE, spins)
-        self.play(Create(square))
+        self.play(make_square(2, 4, BLUE, spins))
         self.wait(2)

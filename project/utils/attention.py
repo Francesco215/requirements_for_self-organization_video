@@ -244,9 +244,19 @@ def extend_chain(spins, delta: int, scene):
 
 
 def draw_arrows_for_chain(links, spins):
+    link_matrix = []
+    for i in range(len(spins['circles'])):
+        row = []
+        for j in range(len(spins['circles'])):
+            if (i, j) in links:
+                v = 1
+            else:
+                v = 0
+            row.append(v)
+        link_matrix.append(row)
     g = VGroup(*spins['circles'])
     arrows = []
-    for i, row in enumerate(links):
+    for i, row in enumerate(link_matrix):
         for j, val in enumerate(row):
             if val == 1:
                 c_i = g[i][0]

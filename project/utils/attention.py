@@ -225,7 +225,7 @@ def extend_chain(spins, delta: int, scene):
         new_radius = calc_radius2(circles_num)
         scale = new_radius / old_radius
         scene.play(g.animate.scale(scale))
-        scene.play(g.animate.shift(LEFT * (new_radius + spacing)))
+        scene.play(g.animate.shift(LEFT * (new_radius + spacing)), rate_function=smooth, run_time=1.5)
         circle = Circle(
             radius=new_radius,
             fill_color=colors[circles_num % len(colors)],

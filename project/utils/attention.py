@@ -216,7 +216,7 @@ def fade_lines(lines):
    return [FadeOut(lines[line]) for line in lines]
 
 
-def extend_chain(spins, delta: int, scale):
+def extend_chain(spins, delta: int, camera):
     g = VGroup(*spins['circles'])
     old_radius = spins['circles'][0][0].radius
     circles_num = len(spins['circles'])
@@ -231,18 +231,17 @@ def extend_chain(spins, delta: int, scale):
         )
         var = MathTex("s_{" + str(circles_num - 1) + "}", font_size=g[-1][1].font_size)
         var.set_z_index(1)
-        circle = VGroup(circle, var)
-        circle.next_to(g[-1], RIGHT, buff=spacing)
-        draw_cicles_anim_group.append(FadeIn(circle))
-        g.add(circle)
+        spin = VGroup(circle, var)
+        spin.next_to(g[-1], RIGHT, buff=spacing)
+        draw_cicles_anim_group.append(Create(circle))
+        draw_cicles_anim_group.append(Write(var))
+        g.add(spin)
     spins['circles'] = g
-    return [
-        AnimationGroup(*draw_cicles_anim_group),
-        spins['circles'].animate.scale(
-            scale,
-            about_point=(-1 * (delta / 1.5), 0, 0)  # picked experimentaly,
-        )
-    ]
+    center=np.array([g.get_center()[0],0,0])
+    camera_anim=camera.frame.animate.move_to(center).set(width=g.width+old_radius)
+    camera_anim=AnimationGroup(camera_anim,run_time=3)
+    drawing_anim=LaggedStart(*draw_cicles_anim_group,lag_ratio=0.1,run_time=3)
+    return LaggedStart(camera_anim,drawing_anim,lag_ratio=0.3) 
 
 
 def draw_arrows_for_chain(links, spins):

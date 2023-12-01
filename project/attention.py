@@ -66,7 +66,7 @@ class ColorText(Scene):
         self.wait(2)
 
 
-class ExtendChanDrawLines(Scene):
+class ExtendChanDrawLines(MovingCameraScene):
     def construct(self):
         # plane = NumberPlane()
         # self.add(plane)
@@ -81,9 +81,7 @@ class ExtendChanDrawLines(Scene):
         self.play(*spins['words2circles'], run_time=2)
         arrows = draw_arrows_for_chain([(i,9) for i in range(9)], spins)
         self.play(*arrows)
-        for circle in spins['transformed_circles']:
-            self.remove(circle)
-        self.play(*extend_chain(spins, 5, 0.5))
+        self.play(extend_chain(spins, 7, self.camera))
         self.play(make_square(2, 4, BLUE, spins))
         self.play(translate_square(2, spins))
         self.wait(1)
@@ -91,3 +89,22 @@ class ExtendChanDrawLines(Scene):
         self.wait(1)
         self.play(translate_square(-2, spins))
         self.wait(2)
+
+class test(MovingCameraScene):
+    def construct(self):
+       circles=[Circle(0.3).shift(3*LEFT+i*RIGHT) for i in range(7)]
+       anim=[Create(circle) for circle in circles]
+       anim=LaggedStart(*anim,lag_ratio=0.1)
+       self.play(anim, self.camera.frame.animate.set(width=5)) 
+       
+
+from manim import *
+
+class ChangingCameraWidthAndRestore(MovingCameraScene):
+    def construct(self):
+        text = Text("Hello World").set_color(BLUE)
+        self.add(text)
+        self.camera.frame.save_state()
+        self.play(self.camera.frame.animate.set(width=text.width * 1.2))
+        self.wait(0.3)
+        self.play(Restore(self.camera.frame))

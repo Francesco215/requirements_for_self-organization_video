@@ -283,10 +283,19 @@ def draw_arrows_for_chain(links, spins):
 def make_square(start, end, color, spins):
     left = spins['circles'][start][0]
     right = spins['circles'][end][0]
-    return FadeIn(
-        SurroundingRectangle(
-            VGroup(left, right),
-            color=color,
-            buff=0.05
-        )
+    spins['circle_start'] = start
+    spins['rectangle'] = SurroundingRectangle(
+        VGroup(left, right),
+        color=color,
+        buff=0.05
     )
+    return FadeIn(spins['rectangle'])
+
+
+def translate_square(steps: int, spins):
+    new_circle_start = spins['circle_start'] + steps
+    new_x = spins['circles'][new_circle_start][0].get_corner(UL) - 0.05
+    old_x = spins['rectangle'].get_corner(UL)
+    delta = new_x - old_x
+    spins['circle_start'] = new_circle_start
+    return spins['rectangle'].animate.shift(RIGHT * delta)

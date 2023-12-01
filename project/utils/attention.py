@@ -216,31 +216,33 @@ def fade_lines(lines):
    return [FadeOut(lines[line]) for line in lines]
 
 
-def extend_chain(spins, delta: int, scene):
+def extend_chain(spins, delta: int, scale):
     g = VGroup(*spins['circles'])
     old_radius = spins['circles'][0][0].radius
     circles_num = len(spins['circles'])
+    draw_cicles_anim_group = []
     for _ in range(delta):
         circles_num += 1
-        new_radius = calc_radius2(circles_num)
-        scale = new_radius / old_radius
-        scene.play(g.animate.scale(scale))
-        scene.play(g.animate.shift(LEFT * (new_radius + spacing)), rate_function=smooth, run_time=1.5)
         circle = Circle(
-            radius=new_radius,
+            radius=old_radius,
             fill_color=colors[circles_num % len(colors)],
             fill_opacity=1,
             stroke_width=0
         )
-
         var = MathTex("s_{" + str(circles_num - 1) + "}", font_size=g[-1][1].font_size)
         var.set_z_index(1)
         circle = VGroup(circle, var)
         circle.next_to(g[-1], RIGHT, buff=spacing)
-        scene.play(FadeIn(circle))
+        draw_cicles_anim_group.append(FadeIn(circle))
         g.add(circle)
-        old_radius = new_radius
     spins['circles'] = g
+    return [
+        AnimationGroup(*draw_cicles_anim_group),
+        spins['circles'].animate.scale(
+            scale,
+            about_point=(-1 * (delta / 1.5), 0, 0)  # picked experimentaly,
+        )
+    ]
 
 
 def draw_arrows_for_chain(links, spins):

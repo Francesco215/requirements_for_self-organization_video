@@ -40,3 +40,23 @@ def update_fill(group: VGroup, new_state: np.array) -> list[Animation]:
             animations.append(obj.animate.set_fill(color))
 
     return animations
+
+
+
+def small_world(N, K, beta):
+    # Create a regular ring lattice
+    G = np.zeros((N, N), dtype=int)
+    for i in range(N):
+        for j in range(1, K // 2 + 1):
+            G[i, (i + j) % N] = 1
+            G[i, (i - j) % N] = 1
+    
+    # Rewire edges with probability beta
+    for i in range(N):
+        for j in range(1, K // 2 + 1):
+            if np.random.rand() < beta:
+                G[i, (i + j) % N] = 0
+                new_neighbor = np.random.choice(np.setdiff1d(np.arange(N), [i, (i + j) % N]))
+                G[i, new_neighbor] = 1
+    
+    return G

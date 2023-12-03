@@ -1,9 +1,11 @@
 import random
+from fc_ising import draw_circles
+from simulations.fully_connected import FC_Ising
 
 from utils.attention import *
 from utils.GLOBAL_VALUES import *
-
-class ColorText(Scene):
+from utils.utils import small_world
+class ColorText(MovingCameraScene):
     def construct(self):
         # plane = NumberPlane()
         # self.add(plane)
@@ -18,8 +20,6 @@ class ColorText(Scene):
         spins = tokens_to_variables(tokens)
         self.play(FadeOut(tokens['text_obj']))
         self.play(*spins['words2circles'], run_time=2)
-        for circle in spins['transformed_circles']:
-            self.remove(circle)
         self.wait()
 
         spin_tex=MathTex('s_i','\in \mathbb R^n').shift(2*UP)
@@ -28,6 +28,8 @@ class ColorText(Scene):
         self.wait()
         self.play(FadeOut(spin_tex))
 
+        for circle in spins['transformed_circles']:
+            self.remove(circle)
         chain = roll_chain(spins)
         self.play(*chain['anims'], run_time=2)
 
@@ -37,7 +39,8 @@ class ColorText(Scene):
             for j in range(i,circles_num):
                 line[i,j]=0
 
-        attention = connect_tokens(spins['circles'], line)
+        connection_colors=np.random.choice(magma_colors,(20,20))
+        attention = connect_tokens(spins['circles'], line, connection_colors)
         self.play(*attention['animations'], run_time=2)
         self.wait()
 
@@ -62,49 +65,76 @@ class ColorText(Scene):
         self.wait(1)
 
         self.play(*unroll_chain(chain))
-        extend_chain(spins, 5, self)
-        self.wait(2)
+        self.wait()
+        last_spin=9
+        arrows_anim, arcs = draw_arrows_for_chain([(i,last_spin) for i in range(last_spin)], spins, connection_colors)
+        self.play(*arrows_anim)
+        self.wait()
+        self.play(FadeOut(arcs))
+        self.wait()
+        self.play(extend_chain(spins, 8, self.camera))
 
 
-class ExtendChanDrawLines(MovingCameraScene):
-    def construct(self):
-        # plane = NumberPlane()
-        # self.add(plane)
+        last_spin=17
+        arrows_anim, arcs = draw_arrows_for_chain([(i,last_spin) for i in range(last_spin)], spins, connection_colors)
+        self.play(*arrows_anim)
+        self.wait()
+        start_spin=9
+        self.play(*[FadeOut(arcs[i]) for i in range(start_spin)])
+        self.wait()
+        rectangle_anim,rectangle= make_square(start_spin, len(arcs), hamiltonian_color, spins)
+        self.play(
+            *[FadeOut(arcs[i]) for i in range(start_spin,len(arcs))],
+            rectangle_anim
+            )
+        self.wait()        
 
-        words = ['Chapter', ' 1', ':', ' To', ' you', ', ', '200', '0', ' years', ' later']
 
-        tokens = tokenization(words)
-        self.play(tokens['create'], run_time=2)
-        self.play(*tokens['colorize'], run_time=2)
-        spins = tokens_to_variables(tokens)
-        self.play(FadeOut(tokens['text_obj']))
-        self.play(*spins['words2circles'], run_time=2)
-        arrows = draw_arrows_for_chain([(i,9) for i in range(9)], spins)
-        self.play(*arrows)
-        self.play(extend_chain(spins, 7, self.camera))
-        self.play(make_square(2, 4, BLUE, spins))
-        self.play(translate_square(2, spins))
-        self.wait(1)
-        self.play(translate_square(2, spins))
-        self.wait(1)
-        self.play(translate_square(-2, spins))
-        self.wait(2)
+        #now the window slides from the start to the end
+        window_size=8
+        arrow=None
+        for end_spin in range(1,len(spins['circles'])):
+            start_spin=np.max([end_spin-window_size,0])
+            _, new_rectangle=make_square(start_spin, end_spin, hamiltonian_color, spins)
+            animations=[Transform(rectangle,new_rectangle)]
+            if start_spin==5:
+                bottom_of_spin=spins['circles'][2][0].get_bottom()
+                arrow=Arrow(bottom_of_spin+1.5*DOWN, bottom_of_spin)
+                animations.append(Create(arrow))
+            if start_spin==8: #maybe it's not necessary
+                animations.append(FadeOut(arrow))
+            self.play(*animations)
+         
+        self.wait()
 
-class test(MovingCameraScene):
-    def construct(self):
-       circles=[Circle(0.3).shift(3*LEFT+i*RIGHT) for i in range(7)]
-       anim=[Create(circle) for circle in circles]
-       anim=LaggedStart(*anim,lag_ratio=0.1)
-       self.play(anim, self.camera.frame.animate.set(width=5)) 
-       
+        #here i talk about the fact the the interactions are not important
+        self.play(FadeOut(rectangle),*[FadeIn(arcs[i]) for i in range(start_spin,len(arcs))])
+        for _ in range(10):
+            self.play(*[arc.animate.set_color(np.random.choice(magma_colors)) for arc in arcs[start_spin:]],run_time=0.5)
+        self.wait()
+        self.play(*[FadeOut(arcs[i]) for i in range(start_spin,len(arcs))])
+        self.wait()
 
-from manim import *
 
-class ChangingCameraWidthAndRestore(MovingCameraScene):
-    def construct(self):
-        text = Text("Hello World").set_color(BLUE)
-        self.add(text)
-        self.camera.frame.save_state()
-        self.play(self.camera.frame.animate.set(width=text.width * 1.2))
-        self.wait(0.3)
-        self.play(Restore(self.camera.frame))
+
+        #here i talk about topology required
+        n_circles=len(spins['circles'])
+        chain = roll_chain(spins)
+        self.play(*chain['anims'], run_time=2)
+        self.wait()
+        sw_lines=small_world(n_circles,4,0.7)
+        attention = connect_tokens(spins['circles'], sw_lines, connection_colors)
+        
+        self.play(*attention['animations'], run_time=2)
+        self.wait()
+
+        #here i draw the equivalent ising model
+        n_ising_spins=100
+        ising=FC_Ising(n_ising_spins)
+        ising_colors = ising.state==1
+        ising_circles = draw_circles(ising_colors).shift(10*RIGHT)
+        self.play(Create(ising_circles))
+        self.wait()
+
+        ising_lines=small_world(n_ising_spins,4,0.7)
+        

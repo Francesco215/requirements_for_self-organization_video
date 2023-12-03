@@ -7,18 +7,18 @@ from matplotlib import pyplot as plt
 from utils.grid import eq_position
 
 
-cmap = plt.get_cmap("viridis")
+vir = plt.get_cmap("viridis")
+mag = plt.get_cmap("magma")
 
-
-def get_manim_color(value):
+def get_manim_color(value, cmap=vir):
     # value from 0 to 1
     r, g, b, _ = cmap(value)
     return rgb_to_color([r, g, b])
 
 
 colors_num = 15
-colors = [get_manim_color(v / colors_num) for v in range(colors_num)]
-
+viridis_colors = [get_manim_color(v / colors_num) for v in range(colors_num)]
+magma_colors = [get_manim_color(v, mag) for v in np.linspace(0.2,1,colors_num)]
 
 def tokenization(text):
     font_size = DEFAULT_FONT_SIZE
@@ -46,7 +46,7 @@ def tokenization(text):
     prev_x_right = None
     backgrounds = []
     for i, token in enumerate(text):
-        color = colors[i % len(colors)]
+        color = viridis_colors[i % len(viridis_colors)]
         token_len = len(token.strip())
         background = BackgroundRectangle(text_obj[offset:][:token_len], color=color)
         x_left, _, _ = background.get_corner(UL)
@@ -176,7 +176,7 @@ def unroll_chain(item):
         )
     return anims
 
-def connect_tokens(circles, line):
+def connect_tokens(circles, line, colors):
     lines = {}
     animations = []
     for i, row in enumerate(line):
@@ -187,7 +187,7 @@ def connect_tokens(circles, line):
                 line = Line(
                     c_i.get_center(),
                     c_j.get_center(),
-                    color=random.choice(colors)
+                    color=colors[i][j]
                 ).set_z_index(-1)
                 lines[(i, j)] = line
                 animations.append(Create(line))
@@ -225,7 +225,7 @@ def extend_chain(spins, delta: int, camera):
         circles_num += 1
         circle = Circle(
             radius=old_radius,
-            fill_color=colors[circles_num % len(colors)],
+            fill_color=viridis_colors[circles_num % len(viridis_colors)],
             fill_opacity=1,
             stroke_width=0
         )
@@ -244,7 +244,7 @@ def extend_chain(spins, delta: int, camera):
     return LaggedStart(camera_anim,drawing_anim,lag_ratio=0.3) 
 
 
-def draw_arrows_for_chain(links, spins):
+def draw_arrows_for_chain(links, spins, colors):
     link_matrix = []
     for i in range(len(spins['circles'])):
         row = []
@@ -256,7 +256,8 @@ def draw_arrows_for_chain(links, spins):
             row.append(v)
         link_matrix.append(row)
     g = VGroup(*spins['circles'])
-    arrows = []
+    arcs=VGroup()
+    animations = []
     for i, row in enumerate(link_matrix):
         for j, val in enumerate(row):
             if val == 1:
@@ -272,25 +273,25 @@ def draw_arrows_for_chain(links, spins):
                 arc = ArcBetweenPoints(
                     start=start,
                     end=end,
-                    stroke_color=YELLOW
+                    stroke_color=colors[i][j]
                 )
                 arc.add_tip()
-                spins['circles'][i].add(arc)
-                arrows += [Create(arc)]
+                arcs.add(arc)
+                animations += [Create(arc)]
     spins['circles'] = g
-    return arrows
+    return animations, arcs
 
 
 def make_square(start, end, color, spins):
     left = spins['circles'][start][0]
     right = spins['circles'][end][0]
     spins['circle_start'] = start
-    spins['rectangle'] = SurroundingRectangle(
+    rectangle = SurroundingRectangle(
         VGroup(left, right),
         color=color,
         buff=0.05
     )
-    return FadeIn(spins['rectangle'])
+    return FadeIn(rectangle), rectangle
 
 
 def translate_square(steps: int, spins):

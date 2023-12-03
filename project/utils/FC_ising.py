@@ -62,7 +62,7 @@ def lines2circle(circles: VGroup, target_idx: int) -> VGroup:
 def connect_circles(circles,connectivity_matrix):
     lines=VGroup()
     for i in range(len(connectivity_matrix)):
-        for j in range(i,len(connectivity_matrix)):
+        for j in range(len(connectivity_matrix)):
             if connectivity_matrix[i][j]==1:
                 lines.add(Line(circles[i].get_center(),circles[j].get_center(), stroke_color=hamiltonian_color, z_index=-1))
     return lines.set_z_index(-1)

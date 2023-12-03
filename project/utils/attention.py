@@ -130,7 +130,7 @@ def tokens_to_variables(item):
 def calc_radius(circles_radius, circles_num, spacing=0.03):
     return (circles_radius+spacing)/np.sin(PI/circles_num)
 
-def roll_chain(item):
+def roll_chain(item, x_translation=0):
     circle_radius = calc_radius(item['radius'],  len(item['circles']))
     angle_increment = 360 / len(item['circles'])
     anims = []
@@ -143,10 +143,11 @@ def roll_chain(item):
             'circle': obj,
             'position': obj.get_center()
         })
-        anims.append(ApplyMethod(obj.move_to, [x, y, 0]))
+        anims.append(ApplyMethod(obj.move_to, [x+x_translation, y, 0]))
     return {
         'anims': anims,
-        'init_positions': init_positions
+        'init_positions': init_positions,
+        'radius': circle_radius
     }
 
 

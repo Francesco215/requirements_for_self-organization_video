@@ -2,6 +2,7 @@ import random
 from fc_ising import draw_circles
 from simulations.fully_connected import FC_Ising
 
+from utils.FC_ising import connect_circles,logistic,update_fill
 from utils.attention import *
 from utils.GLOBAL_VALUES import *
 from utils.utils import small_world
@@ -10,6 +11,7 @@ class ColorText(MovingCameraScene):
         # plane = NumberPlane()
         # self.add(plane)
 
+        window_size=8
         #words = ['Many',' words ',' map',' to',' one',' token']
         words = ['Chapter',' 1',':',' To',' you',', ','200','0',' years',' later']
         
@@ -39,7 +41,7 @@ class ColorText(MovingCameraScene):
             for j in range(i,circles_num):
                 line[i,j]=0
 
-        connection_colors=np.random.choice(magma_colors,(20,20))
+        connection_colors=np.random.choice(magma_colors,(100,100))
         attention = connect_tokens(spins['circles'], line, connection_colors)
         self.play(*attention['animations'], run_time=2)
         self.wait()
@@ -72,14 +74,17 @@ class ColorText(MovingCameraScene):
         self.wait()
         self.play(FadeOut(arcs))
         self.wait()
-        self.play(extend_chain(spins, 8, self.camera))
+
+        new_last_spin=30
+        self.play(extend_chain(spins, new_last_spin-last_spin, self.camera))
 
 
-        last_spin=17
+        n_circles=len(spins['circles'])
+        last_spin=new_last_spin
         arrows_anim, arcs = draw_arrows_for_chain([(i,last_spin) for i in range(last_spin)], spins, connection_colors)
         self.play(*arrows_anim)
         self.wait()
-        start_spin=9
+        start_spin=n_circles-window_size
         self.play(*[FadeOut(arcs[i]) for i in range(start_spin)])
         self.wait()
         rectangle_anim,rectangle= make_square(start_spin, len(arcs), hamiltonian_color, spins)
@@ -91,7 +96,6 @@ class ColorText(MovingCameraScene):
 
 
         #now the window slides from the start to the end
-        window_size=8
         arrow=None
         for end_spin in range(1,len(spins['circles'])):
             start_spin=np.max([end_spin-window_size,0])
@@ -101,7 +105,7 @@ class ColorText(MovingCameraScene):
                 bottom_of_spin=spins['circles'][2][0].get_bottom()
                 arrow=Arrow(bottom_of_spin+1.5*DOWN, bottom_of_spin)
                 animations.append(Create(arrow))
-            if start_spin==8: #maybe it's not necessary
+            if start_spin==n_circles-window_size-5: #maybe it's not necessary
                 animations.append(FadeOut(arrow))
             self.play(*animations)
          
@@ -118,8 +122,7 @@ class ColorText(MovingCameraScene):
 
 
         #here i talk about topology required
-        n_circles=len(spins['circles'])
-        chain = roll_chain(spins)
+        chain = roll_chain(spins,1.5)
         self.play(*chain['anims'], run_time=2)
         self.wait()
         sw_lines=small_world(n_circles,4,0.7)
@@ -132,9 +135,40 @@ class ColorText(MovingCameraScene):
         n_ising_spins=100
         ising=FC_Ising(n_ising_spins)
         ising_colors = ising.state==1
-        ising_circles = draw_circles(ising_colors).shift(10*RIGHT)
+        big_radius=chain['radius']
+        ising_circles = draw_circles(ising_colors, big_radius=big_radius).next_to(spins['circles'],2*RIGHT*big_radius)
         self.play(Create(ising_circles))
         self.wait()
 
         ising_lines=small_world(n_ising_spins,4,0.7)
-        
+        lines=connect_circles(ising_circles,ising_lines)
+        self.play(Create(lines))
+        self.wait()
+
+
+        #here i add the temperature slider and start the simulation
+        slider=Line(start=big_radius*DOWN*0.7,end=big_radius*UP*0.7, stroke_width=15).next_to(ising_circles,big_radius*2.5*RIGHT)
+
+        pointer=Triangle().scale(0.5).set_stroke(width=0.2).rotate(-90*DEGREES).set_fill(color=temperature_color,opacity=1)
+        temp_tex=MathTex('T').next_to(pointer,LEFT*2).set_color(temperature_color).scale(2.5)
+
+        pointer_position=slider.get_x()*RIGHT+LEFT + big_radius*UP*0.5 
+        t_pointer=VGroup(pointer,temp_tex).move_to(pointer_position)
+
+        self.play(Create(slider))
+        self.play(Create(pointer),Write(temp_tex))
+
+
+
+        for t in np.linspace(-10, 10, 300):
+            temperature = logistic(t, start_value=2., end_value=.9, transition_speed=1)
+            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
+            colors = ising.simulation_steps(temperature, 5)
+
+            # Use there rate_func to control the animation substeps
+            self.play(pointer_movement, *update_fill(ising_circles, colors), run_time=0.1, rate_func=linear)
+
+
+
+
+

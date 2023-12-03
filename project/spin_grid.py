@@ -83,8 +83,6 @@ class Peiels2D(Scene):
 
         ising = Ising2D(shape, starting_state=array)
         
-        print(ising.state)
-
         grid = make_grid(ising.state == 1, self, radius=0.2)
 
         circles_to_squares(grid, self)

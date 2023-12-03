@@ -126,30 +126,12 @@ def tokens_to_variables(item):
     }
 
 
-def circles_intersect(center1, center2, radius):
-    distance = math.sqrt((center1[0] - center2[0])**2 + (center1[1] - center2[1])**2)
-    return distance < 2 * radius
 
-
-def calc_radius(item, circles_num):
-    circle_radius = 1
-    angle_increment = 360 / circles_num
-    while True:
-        x1 = circle_radius * np.cos(np.deg2rad(0))
-        y1 = circle_radius * np.sin(np.deg2rad(0))
-
-        x2 = circle_radius * np.cos(np.deg2rad(angle_increment))
-        y2 = circle_radius * np.sin(np.deg2rad(angle_increment))
-
-        if circles_intersect([x1, y1],[x2, y2], item['radius']):
-            circle_radius += 0.05
-        else:
-            break
-    return circle_radius
-
+def calc_radius(circles_radius, circles_num, spacing=0.03):
+    return (circles_radius+spacing)/np.sin(PI/circles_num)
 
 def roll_chain(item):
-    circle_radius = calc_radius(item,  len(item['circles']))
+    circle_radius = calc_radius(item['radius'],  len(item['circles']))
     angle_increment = 360 / len(item['circles'])
     anims = []
     init_positions = []

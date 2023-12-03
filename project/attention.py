@@ -125,7 +125,7 @@ class ColorText(MovingCameraScene):
         chain = roll_chain(spins,1.5)
         self.play(*chain['anims'], run_time=2)
         self.wait()
-        sw_lines=small_world(n_circles,4,0.7)
+        sw_lines=small_world(n_circles,4,0.7) #TODO: modify from here
         attention = connect_tokens(spins['circles'], sw_lines, connection_colors)
         
         self.play(*attention['animations'], run_time=2)
@@ -133,7 +133,7 @@ class ColorText(MovingCameraScene):
 
         #here i draw the equivalent ising model
         n_ising_spins=100
-        ising=FC_Ising(n_ising_spins)
+        ising=FC_Ising(n_ising_spins) #It should really be a small world ising model, but the time evolution should look the same to the naked eye
         ising_colors = ising.state==1
         big_radius=chain['radius']
         ising_circles = draw_circles(ising_colors, big_radius=big_radius).next_to(spins['circles'],2*RIGHT*big_radius)
@@ -160,7 +160,7 @@ class ColorText(MovingCameraScene):
 
 
 
-        for t in np.linspace(-10, 10, 300):
+        for t in np.linspace(-10, 10, 30):
             temperature = logistic(t, start_value=2., end_value=.9, transition_speed=1)
             pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)

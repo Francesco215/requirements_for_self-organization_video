@@ -43,7 +43,7 @@ def update_fill(group: VGroup, new_state: np.array) -> list[Animation]:
 
 
 
-def small_world(N, K, beta):
+def small_world(N, K=4, beta=0.7):
     # Create a regular ring lattice
     G = np.zeros((N, N), dtype=int)
     for i in range(N):

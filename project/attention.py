@@ -1,11 +1,12 @@
 import random
 from fc_ising import draw_circles
+from simulations.ising_general import GeneralIsing
 from simulations.fully_connected import FC_Ising
 
 from utils.FC_ising import connect_circles,logistic,update_fill
 from utils.attention import *
 from utils.GLOBAL_VALUES import *
-from utils.utils import small_world
+from utils.matrix_maker import small_world, big_diag
 class ColorText(MovingCameraScene):
     def construct(self):
         # plane = NumberPlane()
@@ -125,7 +126,9 @@ class ColorText(MovingCameraScene):
         chain = roll_chain(spins,1.5)
         self.play(*chain['anims'], run_time=2)
         self.wait()
-        sw_lines=small_world(n_circles,4,0.7) #TODO: modify from here
+        # sw_lines=small_world(n_circles,4,0.7) #TODO: modify from here
+        sw_lines=big_diag(n_circles,9)
+
         attention = connect_tokens(spins['circles'], sw_lines, connection_colors)
         
         self.play(*attention['animations'], run_time=2)
@@ -133,14 +136,15 @@ class ColorText(MovingCameraScene):
 
         #here i draw the equivalent ising model
         n_ising_spins=100
-        ising=FC_Ising(n_ising_spins) #It should really be a small world ising model, but the time evolution should look the same to the naked eye
+        ising_lines = big_diag(n_ising_spins,2)
+        ising=GeneralIsing(n_ising_spins, ising_lines) #It should really be a small world ising model, but the time evolution should look the same to the naked eye
         ising_colors = ising.state==1
         big_radius=chain['radius']
         ising_circles = draw_circles(ising_colors, big_radius=big_radius).next_to(spins['circles'],2*RIGHT*big_radius)
         self.play(Create(ising_circles))
         self.wait()
 
-        ising_lines=small_world(n_ising_spins,4,0.7)
+        # ising_lines=small_world(n_ising_spins,4,0.7)
         lines=connect_circles(ising_circles,ising_lines)
         self.play(Create(lines))
         self.wait()
@@ -158,9 +162,40 @@ class ColorText(MovingCameraScene):
         self.play(Create(slider))
         self.play(Create(pointer),Write(temp_tex))
 
+        simulation_steps=300
+
+        for t in np.linspace(-10, 10, 300):
+            temperature = logistic(t, start_value=50., end_value=.9, transition_speed=1)
+            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
+            colors = ising.simulation_steps(temperature, 5)
+
+            # Use there rate_func to control the animation substeps
+            self.play(pointer_movement, *update_fill(ising_circles, colors), run_time=0.1, rate_func=linear)
+
+        self.wait()
+
+        fade_out_lines=[FadeOut(attention['lines'][x]) for x in attention['lines']]
+        self.play(FadeOut(lines), *fade_out_lines)
+        ising_lines=small_world(n_ising_spins)
+        ising=GeneralIsing(n_ising_spins,ising_lines)
+        colors=ising.state==1
+        lines=connect_circles(ising_circles,ising_lines)
+        
+
+        sw_lines=small_world(n_circles)
+
+        attention = connect_tokens(spins['circles'], sw_lines, connection_colors)
+        
+        self.play(*update_fill(ising_circles, colors),t_pointer.animate.move_to(pointer_position))
+        self.wait()
+        self.play(Create(lines),*attention['animations'], run_time=2)
+        self.wait()
 
 
-        for t in np.linspace(-10, 10, 30):
+
+
+
+        for t in np.linspace(-10, 10, 300):
             temperature = logistic(t, start_value=2., end_value=.9, transition_speed=1)
             pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)
@@ -168,7 +203,4 @@ class ColorText(MovingCameraScene):
             # Use there rate_func to control the animation substeps
             self.play(pointer_movement, *update_fill(ising_circles, colors), run_time=0.1, rate_func=linear)
 
-
-
-
-
+        self.wait()

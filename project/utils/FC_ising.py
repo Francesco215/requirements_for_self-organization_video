@@ -15,7 +15,7 @@ def draw_circles(state: np.array, big_radius=5) -> VGroup:
     angles = np.linspace(0, 2 * PI, num_circles, endpoint=False)
     circles = VGroup()
 
-    small_radius=big_radius/calc_radius(1,num_circles,0.1)
+    small_radius=big_radius/calc_radius(1,num_circles,0.3)
 
     for color, angle in zip(state.flatten(), angles):
         circles.add(Circle(

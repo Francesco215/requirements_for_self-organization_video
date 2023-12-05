@@ -204,3 +204,15 @@ class ColorText(MovingCameraScene):
             self.play(pointer_movement, *update_fill(ising_circles, colors), run_time=0.1, rate_func=linear)
 
         self.wait()
+
+
+class MovingVertices(Scene):
+    def construct(self):
+        size = 10
+        edges = small_world(size)
+        nodes = [random.choice([0, 1]) for _ in range(size)]
+        graph = plot_network(nodes, edges, 0.3)
+        self.play(Create(graph))
+        for _ in range(4):
+            nodes = [random.choice([0, 1]) for _ in range(size)]
+            self.play(*update_fill_for_graph(graph, nodes), run_time=2)

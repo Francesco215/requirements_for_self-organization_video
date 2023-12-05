@@ -5,6 +5,8 @@ from manim import *
 from matplotlib import pyplot as plt
 
 from utils.grid import eq_position
+from utils.utils import bool2color
+from utils.GLOBAL_VALUES import hamiltonian_color
 
 
 vir = plt.get_cmap("viridis")
@@ -284,3 +286,45 @@ def translate_square(steps: int, spins):
     delta = new_x - old_x
     spins['circle_start'] = new_circle_start
     return spins['rectangle'].animate.shift(RIGHT * delta)
+
+
+def plot_network(nodes: list[int], edges, radius):
+    vertices = [v for v in range(len(edges))]
+
+    edges2 = []
+    edge_config = {}
+    for i, row in enumerate(edges):
+        for j, v in enumerate(row):
+            if v == 1:
+                edges2.append((i, j))
+                edge_config[(i, j)] = {
+                    "stroke_color": hamiltonian_color
+                }
+
+    vertex_config = {}
+    for idx, v in enumerate(nodes):
+        vertex_config[idx] = {
+            "fill_color": bool2color(v),
+            "radius": radius,
+            "fill_opacity": 1,
+
+            "stroke_color": hamiltonian_color,
+            "stroke_width": 1
+        }
+
+    return Graph(
+        vertices,
+        edges2,
+        vertex_type=Circle,
+        vertex_config=vertex_config,
+        edge_config=edge_config,
+        layout_scale=3  # how nodes are far away from each other
+    )
+
+
+def update_fill_for_graph(graph, nodes: list[int]):
+    animations = []
+    for idx, v in enumerate(nodes):
+        color = bool2color(v)
+        animations.append(graph.vertices[idx].animate.set_fill(color))
+    return animations

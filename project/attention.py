@@ -7,6 +7,9 @@ from utils.FC_ising import connect_circles,logistic,update_fill
 from utils.attention import *
 from utils.GLOBAL_VALUES import *
 from utils.matrix_maker import small_world, big_diag
+
+simulation_frames=300
+
 class ColorText(MovingCameraScene):
     def construct(self):
         # plane = NumberPlane()
@@ -56,9 +59,10 @@ class ColorText(MovingCameraScene):
         self.play(*anim2)
         self.wait(1)
         
+        #TODO: shift left graph
         O_tex=MathTex('~ O(','N','^2)').shift(4*RIGHT)
         O_tex[1].set_color(spin_color)
-        self.play(Write(O_tex))
+        self.play(VGroup(*spins['circles'],attention['lines_vgroup']).animate.shift(2*LEFT),Write(O_tex))
         self.wait(1)
         self.play(Wiggle(O_tex[1]))
         self.wait(1)
@@ -127,7 +131,7 @@ class ColorText(MovingCameraScene):
         self.play(*chain['anims'], run_time=2)
         self.wait()
         # sw_lines=small_world(n_circles,4,0.7) #TODO: modify from here
-        sw_lines=big_diag(n_circles,9)
+        sw_lines=big_diag(n_circles,7)
 
         attention = connect_tokens(spins['circles'], sw_lines, connection_colors)
         
@@ -144,10 +148,19 @@ class ColorText(MovingCameraScene):
         self.play(Create(ising_circles))
         self.wait()
 
-        # ising_lines=small_world(n_ising_spins,4,0.7)
         lines=connect_circles(ising_circles,ising_lines)
         self.play(Create(lines))
         self.wait()
+
+
+        links = [(0,i%n_circles) for i in range(-10,10)]
+        anim1 = highlight_links(links, attention['lines'])
+        self.play(*anim1)
+        self.wait()
+        anim2 = normal_links(attention['lines'])
+        self.play(*anim2)
+        self.wait()
+
 
 
         #here i add the temperature slider and start the simulation
@@ -162,9 +175,8 @@ class ColorText(MovingCameraScene):
         self.play(Create(slider))
         self.play(Create(pointer),Write(temp_tex))
 
-        simulation_steps=300
 
-        for t in np.linspace(-10, 10, 300):
+        for t in np.linspace(-10, 10, simulation_frames):
             temperature = logistic(t, start_value=50., end_value=.9, transition_speed=1)
             pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)
@@ -188,15 +200,15 @@ class ColorText(MovingCameraScene):
         
         self.play(*update_fill(ising_circles, colors),t_pointer.animate.move_to(pointer_position))
         self.wait()
-        self.play(Create(lines),*attention['animations'], run_time=2)
+        self.play(*[Create(line) for line in lines],*attention['animations'], run_time=2)
         self.wait()
 
 
 
 
 
-        for t in np.linspace(-10, 10, 300):
-            temperature = logistic(t, start_value=2., end_value=.9, transition_speed=1)
+        for t in np.linspace(-10, 10, simulation_frames):
+            temperature = logistic(t, start_value=20., end_value=.9, transition_speed=1)
             pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)
 
@@ -205,14 +217,66 @@ class ColorText(MovingCameraScene):
 
         self.wait()
 
+class PlotGraph(Scene):
+    def construct(self):
+        n_nodes = 15 
+        edges = small_world(n_nodes)
+        nodes = [1 for _ in range(n_nodes)]
+        graph = plot_network(nodes, edges, 0.3).shift(LEFT)        
+        ising=GeneralIsing(n_nodes,edges)
+        nodes=ising.state==1
+        
+
+        self.play(Create(graph),run_time=3)
+        self.wait()
+
+
 
 class MovingVertices(Scene):
     def construct(self):
-        size = 10
-        edges = small_world(size)
-        nodes = [random.choice([0, 1]) for _ in range(size)]
-        graph = plot_network(nodes, edges, 0.3)
+        n_nodes = 15 
+        edges = small_world(n_nodes)
+        nodes = [random.choice([0, 1]) for _ in range(n_nodes)]
+        graph = plot_network(nodes, edges, 0.3).shift(LEFT)        
+        ising=GeneralIsing(n_nodes,edges)
+        nodes=ising.state==1
+        
+        #here i add the temperature slider and start the simulation
+        big_radius=3
+        slider=Line(start=big_radius*DOWN*0.7,end=big_radius*UP*0.7).shift(5*RIGHT)
+
+        pointer=Triangle().scale(0.5).set_stroke(width=0.2).rotate(-90*DEGREES).set_fill(color=temperature_color,opacity=1)
+        temp_tex=MathTex('T').next_to(pointer,LEFT*2).set_color(temperature_color).scale(2.5)
+
+        pointer_position=slider.get_x()*RIGHT+LEFT*0.5 + big_radius*UP*0.5 
+        t_pointer=VGroup(pointer,temp_tex).move_to(pointer_position).scale(0.4)
+
         self.play(Create(graph))
-        for _ in range(4):
-            nodes = [random.choice([0, 1]) for _ in range(size)]
-            self.play(*update_fill_for_graph(graph, nodes), run_time=2)
+        self.wait()
+        self.play(Create(slider))
+        self.play(Create(pointer),Write(temp_tex))
+        self.wait()
+
+
+        for t in np.linspace(-10, 10, 300):
+            temperature = logistic(t, start_value=20., end_value=.9, transition_speed=1)
+            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
+            colors = ising.simulation_steps(temperature, 5)
+
+            # Use there rate_func to control the animation substeps
+            self.play(pointer_movement, *update_fill_for_graph(graph, colors), run_time=0.1, rate_func=linear)
+            # self.play(*update_fill_for_graph(graph, colors), run_time=2)
+
+        self.wait()
+
+
+class Question(Scene):
+    def construct(self):
+        myBaseTemplate = TexTemplate(
+            documentclass="\documentclass[preview]{standalone}"
+        )
+        myBaseTemplate.add_to_preamble(r"\usepackage{ragged2e}")
+
+        text=Tex("\\justifying{Can we generate text in such a way that every element of the sequence looks to just a few other elements without doing any compromise in terms of the quality of the text?}",
+                 tex_template=myBaseTemplate).scale(0.8)
+        self.play(Write(text),run_time=8)

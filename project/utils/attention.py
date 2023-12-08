@@ -164,6 +164,7 @@ def unroll_chain(item):
 def connect_tokens(circles, line, colors):
     lines = {}
     animations = []
+    lines_vgroup = VGroup()
     for i, row in enumerate(line):
         for j, val in enumerate(row):
             if val == 1:
@@ -175,10 +176,12 @@ def connect_tokens(circles, line, colors):
                     color=colors[i][j]
                 ).set_z_index(-1)
                 lines[(i, j)] = line
+                lines_vgroup.add(line)
                 animations.append(Create(line))
     return {
         'lines': lines,
-        'animations': animations
+        'animations': animations,
+        'lines_vgroup': lines_vgroup
     }
 
 stroke_width=4 #manim default stroke width

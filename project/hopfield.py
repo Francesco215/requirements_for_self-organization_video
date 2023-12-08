@@ -16,7 +16,7 @@ class Hop(Scene):
         ax = Axes(
             x_range=[0, 10], y_range=[-0.2, 1.1, 10], axis_config={"include_tip": False}
         )
-        labels = ax.get_axis_labels(x_label="",y_label="E")
+        labels = ax.get_axis_labels(x_label="",y_label="E").set_color(hamiltonian_color)
         t = ValueTracker(4.7)
 
         graph = ax.plot(energy_landscape, color=ORANGE)
@@ -24,11 +24,25 @@ class Hop(Scene):
         initial_point = [ax.coords_to_point(t.get_value(), energy_landscape(t.get_value()))]
         dot = Dot(point=initial_point)
 
-        dot.add_updater(lambda x: x.move_to(ax.c2p(t.get_value(), energy_landscape(t.get_value()))))
+        dot.add_updater(lambda x: x.move_to(ax.coords_to_point(t.get_value(), energy_landscape(t.get_value()))))
         x_space = np.linspace(*ax.x_range[:2],200)
         minimum_index = ((x_space-patterns[1])**2).argmin()+1
 
-        self.add(ax, labels, graph, dot)
+        self.play(FadeIn(ax))
+        self.play(Write(labels))
+        self.play(Create(graph))
+        self.wait()
+
+        coords=[ax.coords_to_point(p,-0.2) for p in patterns]
+        letters=[Text(l).shift(c) for l,c in zip(['C','S','A','U'],coords)]
+
+        
+        self.play(LaggedStart(*[Write(l) for l in letters],lag_ratio=0.4,run_time=3))
+        
+
+
+        self.play(Create(dot))
+        self.wait()
         self.play(t.animate.set_value(x_space[minimum_index]),run_time=3)
         self.wait()
 

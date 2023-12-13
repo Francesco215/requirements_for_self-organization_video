@@ -3,13 +3,13 @@ from manim import *
 from utils.GLOBAL_VALUES import spin_color, hamiltonian_color
 
 
-def rotate_spin(self, text, arrow, angle, index):
-    if angle==PI:
+def rotate_spin(self, text, arrow, target_spin, index):
+    if target_spin==-1:
         target_text=MathTex(f"s_{index}","=-1").next_to(text,0)
     else:
         target_text=MathTex(f"s_{index}","=+1").next_to(text,0)
     target_text[0].set_color(spin_color)
-    return Rotate(arrow, angle=angle), Transform(text,target_text)
+    return Rotate(arrow, angle=PI), Transform(text,target_text)
 
 
 def change_hamiltonian(self, hamiltonian, sign):
@@ -86,7 +86,7 @@ class CoupleSpins(Scene):
         self.wait(1)
 
         target_energy=MathTex('=+J').next_to(energy,0)
-        self.play(Transform(energy,target_energy),*rotate_spin(self, text_1, arrow_1, PI, 1))
+        self.play(Transform(energy,target_energy),*rotate_spin(self, text_1, arrow_1, -1, 1))
         self.wait(1)
 
 
@@ -105,6 +105,22 @@ class CoupleSpins(Scene):
         self.play(Create(high_to_low_arrow), Create(low_to_high_arrow))
 
         target_energy=MathTex('=-J').next_to(energy,0)
-        self.play(Transform(energy,target_energy),*rotate_spin(self, text_1, arrow_1, PI, 1))
+        self.play(Transform(energy,target_energy),*rotate_spin(self, text_1, arrow_1, 1, 1))
         self.play(Wiggle(lower_energy_level,scale_value=1.2))
         self.wait(1) 
+
+
+
+class SimpleTitle(Scene):
+    def construct(self):
+        title= Text('The Ising Model')
+        self.play(Write(title))
+        self.wait()
+        self.play(FadeOut(title))
+
+class SelfOrgTitle(Scene):
+    def construct(self):
+        title= Text('Self-Organizing Systems')
+        self.play(Write(title))
+        self.wait()
+        self.play(FadeOut(title))

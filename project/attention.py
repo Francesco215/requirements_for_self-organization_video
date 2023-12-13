@@ -50,15 +50,18 @@ class ColorText(MovingCameraScene):
         self.play(*attention['animations'], run_time=2)
         self.wait()
 
-        links = [(len(words)-1,i) for i in range(len(words))]
 
-        anim1 = highlight_links(links, attention['lines'])
-        self.play(*anim1)
+        for _ in range(10):
+            start_node=np.random.randint(len(words))
+            links = [(i,start_node) for i in range(len(words))]
+            links += [(start_node,i) for i in range(len(words))]
 
-        anim2 = normal_links(attention['lines'])
-        self.play(*anim2)
-        self.wait(1)
-        
+            anim1 = highlight_links(links, attention['lines'])
+            self.play(*anim1)
+            anim2 = normal_links(attention['lines'])
+            self.play(*anim2)
+        self.wait()
+            
         #TODO: shift left graph
         O_tex=MathTex('~ O(','N','^2)').shift(4*RIGHT)
         O_tex[1].set_color(spin_color)
@@ -217,6 +220,60 @@ class ColorText(MovingCameraScene):
 
         self.wait()
 
+
+class JustTheSmallWorld(Scene):
+    def construct(self):
+        
+
+
+        #here i draw the equivalent ising model
+        n_ising_spins=100
+        ising_lines = big_diag(n_ising_spins,2)
+        ising=GeneralIsing(n_ising_spins, ising_lines) #It should really be a small world ising model, but the time evolution should look the same to the naked eye
+        ising_colors = ising.state==1
+        big_radius=4
+        ising_circles = draw_circles(ising_colors, big_radius=big_radius)
+        self.play(Create(ising_circles))
+        self.wait()
+
+        lines=connect_circles(ising_circles,ising_lines)
+        self.play(Create(lines))
+        self.wait()
+
+
+        # links = [(0,i%n_circles) for i in range(-10,10)]
+        # anim1 = highlight_links(links, attention['lines'])
+        # self.play(*anim1)
+        # self.wait()
+        # anim2 = normal_links(attention['lines'])
+        # self.play(*anim2)
+        # self.wait()
+
+
+
+        #here i add the temperature slider and start the simulation
+        slider=Line(start=5*RIGHT+2.6*DOWN,end=5*RIGHT+0.4*UP)
+
+        pointer=Triangle().scale(0.2).set_stroke(width=0.2).rotate(-90*DEGREES).set_fill(color=temperature_color,opacity=1)
+        temp_tex=MathTex('T').next_to(pointer,LEFT).set_color(temperature_color)
+
+        pointer_position=4.5*RIGHT+0.2*UP
+        t_pointer=VGroup(pointer,temp_tex).move_to(pointer_position)
+
+        self.play(Create(slider))
+        self.play(Create(pointer),Write(temp_tex))
+
+
+
+        for t in np.linspace(-10, 10, simulation_frames):
+            temperature = logistic(t, start_value=50., end_value=.9, transition_speed=1)
+            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
+            colors = ising.simulation_steps(temperature, 5)
+
+            # Use there rate_func to control the animation substeps
+            self.play(pointer_movement, *update_fill(ising_circles, colors), run_time=0.1, rate_func=linear)
+
+        self.wait()
 class PlotGraph(Scene):
     def construct(self):
         n_nodes = 15 

@@ -90,6 +90,7 @@ class Equations(Scene):
         ising_title=Text('Ising Model').shift(2*UP)
         ising_hamiltonian=MathTex('H','=-\sum_{ij}','J','s_is_j')
         ising_hamiltonian[0].set_color(hamiltonian_color)
+        ising_hamiltonian[-1].set_color(spin_color)
         ising=VGroup(ising_title,ising_hamiltonian).shift(3*RIGHT)
         self.play(Write(ising_title),Write(ising_hamiltonian))
         self.wait()
@@ -132,10 +133,10 @@ class Equations(Scene):
         self.wait()
 
         trasformer_title=Text('Attention').shift(2*UP)
-        update_rule=MathTex('\Delta','s_i','=','\sum_j','A_{ij}','V_j')
+        update_rule=MathTex('\Delta','s_i','\\approx','\sum_j','A_','{ij}','V_j')
         update_rule[1].set_color(spin_color)
         update_rule[-1].set_color(spin_color)
-        attention=MathTex('A_{ij}=','\sigma(K_i^TQ_j)').shift(2*DOWN)
+        attention=MathTex('A_{ij}=','\sigma','(K_i^TQ_j)').shift(2*DOWN)
 
         tr=VGroup(trasformer_title,update_rule,attention).shift(3*RIGHT)
 
@@ -153,10 +154,19 @@ class Equations(Scene):
 
 
 
-        target_text=MathTex('\Delta','s_i','\\approx','\sum_j','\sigma(K_i^TQ_j)','V_j').shift(3*RIGHT)
+        target_text=MathTex('\Delta','s_i','\\approx','\sum_j','\sigma','(K_i^TQ_j)','V_j').shift(3*RIGHT)
         target_text[1].set_color(spin_color)
         target_text[-1].set_color(spin_color)
 
-        self.play(Transform(update_rule,target_text),Transform(attention[-1],target_text[-2]))
+        self.play(Transform(update_rule,target_text),Transform(attention[-1],target_text[-2]),Transform(attention[-2],target_text[-3]))
         self.play(FadeOut(attention))
+        self.wait()
+
+        self.play(Indicate(update_rule[-3],2))
+        self.wait()
+
+class SimpleTitle(Scene):
+    def construct(self):
+        title= Text('Hopfield Networks')
+        self.play(Write(title))
         self.wait()

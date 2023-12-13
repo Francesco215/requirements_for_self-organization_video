@@ -21,7 +21,7 @@ def draw_circles(state: np.array, big_radius=5) -> VGroup:
         circles.add(Circle(
                 radius=small_radius,
                 stroke_width=1,
-                stroke_color=WHITE,
+                stroke_color=ORANGE,
                 fill_color=bool2color(color),
                 fill_opacity=1,
             ).move_to(big_radius*polar(angle))
@@ -59,10 +59,10 @@ def lines2circle(circles: VGroup, target_idx: int) -> VGroup:
 
     return lines, destinations, create, uncreate
 
-def connect_circles(circles,connectivity_matrix):
+def connect_circles(circles,connectivity_matrix, stroke_width=DEFAULT_STROKE_WIDTH):
     lines=VGroup()
     for i in range(len(connectivity_matrix)):
         for j in range(len(connectivity_matrix)):
             if connectivity_matrix[i][j]==1:
-                lines.add(Line(circles[i].get_center(),circles[j].get_center(), stroke_color=hamiltonian_color, z_index=-1))
+                lines.add(Line(circles[i].get_center(),circles[j].get_center(), stroke_width=stroke_width, stroke_color=hamiltonian_color, z_index=-1))
     return lines.set_z_index(-1)

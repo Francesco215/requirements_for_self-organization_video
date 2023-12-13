@@ -98,12 +98,17 @@ class Peiels2D(Scene):
         self.play(Write(free_energy))        
         self.wait(1)
 
-        annotation=MathTex('\Delta', 'E', '=2J','\mathcal P').shift(3*DOWN)
+        annotation=MathTex('\Delta', 'E', '=', '2J','\mathcal P').shift(3*DOWN)
         annotation[1].set_color(hamiltonian_color)
-        annotation[3].set_color(domain_barrier_color)
+        annotation[-1].set_color(domain_barrier_color)
         self.play(Write(annotation))
         self.wait(1)
         tracking_boundaries(grid, self)
+
+        self.play(Wiggle(annotation[-1]))
+        self.wait()
+        self.play(Wiggle(annotation[-2]))
+        self.wait()
 
         target=MathTex('\Delta','F','=','2J','\mathcal P','-','T','\Delta','S').next_to(free_energy,0)
         target[1].set_color(hamiltonian_color)
@@ -111,23 +116,33 @@ class Peiels2D(Scene):
         target[6].set_color(temperature_color)
         target[8].set_color(entropy_color)
 
-        self.play(Transform(free_energy,target))
+        self.play(Transform(free_energy,target), Transform(annotation[-2],target[3]),Transform(annotation[-1],target[4]))
+        self.play(FadeOut(annotation))
         self.wait(1)
 
-        target=MathTex('\Omega','(','\mathcal P',')','\le 3^','\mathcal P').next_to(annotation,0)
-        target[0].set_color(entropy_color)
-        target[2].set_color(domain_barrier_color)
-        target[-1].set_color(domain_barrier_color)
+        annotation=MathTex('\\textrm{Number of configurations}','(','\mathcal P',')','\le 3^','\mathcal P').shift(3*DOWN)
+        annotation[0].set_color(entropy_color)
+        annotation[2].set_color(domain_barrier_color)
+        annotation[-1].set_color(domain_barrier_color)
 
-        self.play(Transform(annotation,target))
+        self.play(Write(annotation))
         self.wait(1)
+        self.play(Wiggle(annotation[-2]),Wiggle(annotation[-1]))
+        self.wait()
 
         target=MathTex('\Delta','S','\le', '\mathcal P','\log 3').next_to(annotation,0)
 
         target[1].set_color(entropy_color)
         target[3].set_color(domain_barrier_color)
+
+
         self.play(Transform(annotation,target))
         self.wait(1)
+
+        self.play(Wiggle(annotation[-2]))
+        self.wait()
+        self.play(Wiggle(annotation[-1]))
+        self.wait()
 
 
         target=MathTex('\Delta','F','\ge','2J','\mathcal P','-','T','\mathcal P','\log 3').next_to(free_energy,0)
@@ -136,7 +151,8 @@ class Peiels2D(Scene):
         target[6].set_color(temperature_color)
         target[-2].set_color(domain_barrier_color)
 
-        self.play(Transform(free_energy,target), FadeOut(annotation))
+        self.play(Transform(free_energy,target), Transform(annotation[-1],target[-1]), Transform(annotation[-2],target[-2]))
+        self.play(FadeOut(annotation))
         self.wait(1)
 
 
@@ -148,10 +164,18 @@ class Peiels2D(Scene):
         self.play(Transform(free_energy,target))
         self.wait(1)
 
-        annotation=MathTex('T','\le \\frac{2J}{\log 3}').next_to(annotation,0)
+        for i in range(3,9):
+            self.play(Wiggle(free_energy[i]))
+            self.wait()
+
+        annotation=MathTex('T','\le \\frac{2J}{\log 3}').shift(3*DOWN)
         annotation[0].set_color(temperature_color)
         self.play(Write(annotation))
         self.wait(1)
+        rect=SurroundingRectangle(annotation)
+        self.play(Create(rect))
+        self.wait()
+        self.play(FadeOut(rect))
 
 
 

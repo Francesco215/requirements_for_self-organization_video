@@ -184,20 +184,20 @@ def connect_tokens(circles, line, colors):
         'lines_vgroup': lines_vgroup
     }
 
-stroke_width=4 #manim default stroke width
+DEFAULT_STROKE_WIDTH
 def highlight_links(links_to_highlight, lines):
     animations=[]
     for line in lines:
         if line in links_to_highlight:
-            animations+=[lines[line].animate.set_stroke(width=stroke_width*2)]
+            animations+=[lines[line].animate.set_stroke(width=DEFAULT_STROKE_WIDTH*2)]
         else:
-            animations+=[lines[line].animate.set_stroke(width=stroke_width/2, opacity=0.5)]
+            animations+=[lines[line].animate.set_stroke(width=DEFAULT_STROKE_WIDTH/2, opacity=0.5)]
 
     return animations 
 
 def normal_links(lines):
     
-   return [lines[line].animate.set_stroke(width=stroke_width, opacity=1) for line in lines]
+   return [lines[line].animate.set_stroke(width=DEFAULT_STROKE_WIDTH, opacity=1) for line in lines]
 
 def fade_lines(lines):
 

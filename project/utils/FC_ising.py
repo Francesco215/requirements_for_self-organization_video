@@ -16,12 +16,11 @@ def draw_circles(state: np.array, big_radius=5) -> VGroup:
     circles = VGroup()
 
     small_radius=big_radius/calc_radius(1,num_circles,0.3)
-
     for color, angle in zip(state.flatten(), angles):
         circles.add(Circle(
                 radius=small_radius,
                 stroke_width=1,
-                stroke_color=ORANGE,
+                stroke_color=WHITE,
                 fill_color=bool2color(color),
                 fill_opacity=1,
             ).move_to(big_radius*polar(angle))

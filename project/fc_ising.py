@@ -9,10 +9,10 @@ from simulations.fully_connected import FC_Ising
 from utils.FC_ising import *
 
 
-ising=FC_Ising(20)
-
+simulation_frames=300
 class FullyConnected(Scene):
     def construct(self):
+        ising=FC_Ising(20)
         colors = ising.state==1
         circles = draw_circles(colors,big_radius=3).shift(2*LEFT)
         self.play(Create(circles))
@@ -27,28 +27,7 @@ class FullyConnected(Scene):
 
         self.play(Create(all_lines))
         self.wait()
-        # self.play(FadeOut(all_lines))
-
-        # for i in range(10):
-        #     if i==4:
-        #         self.play(FadeOut(all_lines))
-        #     idx=np.random.randint(0,len(circles))
-        #     lines, destinations, create, uncreate = lines2circle(circles, idx)
-        #     # maby pick other run_time to make animation smoother
-        #     self.play(*create, run_time=0.2, rate_func=linear)
-        #     flying = []
-        #     for line, dst in zip(lines, destinations):
-        #         flying.append(line.animate.shift(dst - line.get_end()))
-        #     self.play(*flying, run_time=0.5, rate_func=linear)
-
-        #     for line in lines:
-        #         start_point = line.get_start()
-        #         end_point = line.get_end()
-        #         line.put_start_and_end_on(end_point, start_point)
-
-        #     self.play(*uncreate, run_time=0.1, rate_func=linear)
-        self.wait(1)
-        hamiltonian=MathTex('H','=J\sum_{i,j}','s_is_j').shift(4*RIGHT,2*UP)
+        hamiltonian=MathTex('H','=\\frac JN\sum_{ij}','s_is_j').shift(4*RIGHT,2*UP)
         hamiltonian[0].set_color(hamiltonian_color)
         hamiltonian[2].set_color(spin_color)
 
@@ -66,7 +45,7 @@ class FullyConnected(Scene):
         self.play(Create(slider))
         self.play(Create(pointer),Write(temp_tex))
 
-        for t in np.linspace(-10, 10, 300):
+        for t in np.linspace(-10, 10, simulation_frames):
             temperature = logistic(t, start_value=8., end_value=.9, transition_speed=1)
             pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+2*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)
@@ -76,5 +55,42 @@ class FullyConnected(Scene):
 
 
 
+        self.play(FadeOut(circles,all_lines))
+        self.play(t_pointer.animate.move_to(pointer_position))
+        self.wait()
 
 
+
+        ising=FC_Ising(100)
+        colors = ising.state==1
+        circles = draw_circles(colors,big_radius=3).shift(2*LEFT)
+        self.play(Create(circles))
+        self.wait(1)
+
+
+        for i in range(10):
+            idx=np.random.randint(0,len(circles))
+            lines, destinations, create, uncreate = lines2circle(circles, idx)
+            # maby pick other run_time to make animation smoother
+            self.play(*create, run_time=0.2, rate_func=linear)
+            flying = []
+            for line, dst in zip(lines, destinations):
+                flying.append(line.animate.shift(dst - line.get_end()))
+            self.play(*flying, run_time=0.5, rate_func=linear)
+
+            for line in lines:
+                start_point = line.get_start()
+                end_point = line.get_end()
+                line.put_start_and_end_on(end_point, start_point)
+
+            self.play(*uncreate, run_time=0.1, rate_func=linear)
+
+        for t in np.linspace(-10, 10, simulation_frames):
+            temperature = logistic(t, start_value=8., end_value=.9, transition_speed=1)
+            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+2*DOWN, start_value=pointer_position, transition_speed=1))
+            colors = ising.simulation_steps(temperature, 5)
+
+            # Use there rate_func to control the animation substeps
+            self.play(pointer_movement, *update_fill(circles, colors), run_time=0.1, rate_func=linear)
+
+        self.wait()

@@ -101,6 +101,8 @@ class Peiels2D(Scene):
         annotation=MathTex('\Delta', 'E', '=', '2J','\mathcal P').shift(3*DOWN)
         annotation[1].set_color(hamiltonian_color)
         annotation[-1].set_color(domain_barrier_color)
+        annotation.set_stroke_width(3)
+        annotation.set_stroke_color(BLACK)
         self.play(Write(annotation))
         self.wait(1)
         tracking_boundaries(grid, self)

@@ -224,14 +224,13 @@ class ColorText(MovingCameraScene):
 class JustTheSmallWorld(Scene):
     def construct(self):
         
-
+        big_radius=3
 
         #here i draw the equivalent ising model
         n_ising_spins=100
-        ising_lines = big_diag(n_ising_spins,2)
+        ising_lines=small_world(n_ising_spins)
         ising=GeneralIsing(n_ising_spins, ising_lines) #It should really be a small world ising model, but the time evolution should look the same to the naked eye
         ising_colors = ising.state==1
-        big_radius=4
         ising_circles = draw_circles(ising_colors, big_radius=big_radius)
         self.play(Create(ising_circles))
         self.wait()
@@ -253,7 +252,6 @@ class JustTheSmallWorld(Scene):
 
         #here i add the temperature slider and start the simulation
         slider=Line(start=5*RIGHT+2.6*DOWN,end=5*RIGHT+0.4*UP)
-
         pointer=Triangle().scale(0.2).set_stroke(width=0.2).rotate(-90*DEGREES).set_fill(color=temperature_color,opacity=1)
         temp_tex=MathTex('T').next_to(pointer,LEFT).set_color(temperature_color)
 
@@ -266,8 +264,8 @@ class JustTheSmallWorld(Scene):
 
 
         for t in np.linspace(-10, 10, simulation_frames):
-            temperature = logistic(t, start_value=50., end_value=.9, transition_speed=1)
-            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+big_radius*DOWN, start_value=pointer_position, transition_speed=1))
+            temperature = logistic(t, start_value=10., end_value=.5, transition_speed=1)
+            pointer_movement = t_pointer.animate.move_to(logistic(t, end_value=pointer_position+2*DOWN, start_value=pointer_position, transition_speed=1))
             colors = ising.simulation_steps(temperature, 5)
 
             # Use there rate_func to control the animation substeps
